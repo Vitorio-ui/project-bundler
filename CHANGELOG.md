@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2026-02-13
+### Added
+- **Docs:** sync README with actual settings
+
 ## [0.1.2] - 2026-02-13
 ### Added
 - **UI Localization:** Menus and settings are now translated into Russian, Spanish, German, French, Japanese, and Chinese.
