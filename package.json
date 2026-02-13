@@ -1,0 +1,118 @@
+{
+  "name": "project-bundler",
+  "displayName": "Project Bundler (Context Builder for AI)",
+  "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
+  "version": "0.1.0",
+  "publisher": "vitorioui",
+  "icon": "icon.png",
+  "keywords": [
+    "ai",
+    "chatgpt",
+    "gemini",
+    "claude",
+    "deepseek",
+    "llm",
+    "context",
+    "bundle",
+    "prompt engineering",
+    "project structure",
+    "code analysis",
+    "copilot",
+    "token optimizer"
+  ],
+  "engines": {
+    "vscode": "^1.109.0"
+  },
+  "categories": [
+    "Other", "Programming Languages"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vitorio-ui/project-bundler"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Context builder",
+      "properties": {
+        "projectBundler.includeFullTree": {
+          "type": "boolean",
+          "default": true,
+          "description": "Always include the full project tree structure.",
+          "markdownDescription": "Включать полное дерево проекта, даже если выбраны отдельные файлы."
+        },
+        "projectBundler.maxFiles": {
+          "type": "number",
+          "default": 10000,
+          "description": "Warning limit for file count.",
+          "markdownDescription": "Лимит файлов, после которого появится предупреждение. Защита от зависания на гигантских монорепозиториях."
+        },
+        "projectBundler.binaryExtensions": {
+          "type": "array",
+          "default": [
+            ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp",
+            ".mp3", ".wav", ".mp4", ".avi", ".mov", ".mkv",
+            ".zip", ".tar", ".gz", ".7z", ".rar",
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+            ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".db", ".sqlite",
+            ".pyc", ".class", ".jar", ".war"
+          ],
+          "description": "List of file extensions to treat as binary (content will be skipped).",
+          "markdownDescription": "Список расширений, содержимое которых **не будет** читаться (чтобы не получить мусор в бандле)."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "project-bundler.runWorkspaceBundle",
+        "title": "BUNDLER: Full Project (Собрать всё)"
+      },
+      {
+        "command": "project-bundler.enterLicense",
+        "title": "BUNDLER: Enter License Key (Unlock Pro)"
+      },
+      {
+        "command": "project-bundler.bundleSelected",
+        "title": "BUNDLER: Selected (Собрать выбранное)"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "project-bundler.bundleSelected",
+          "when": "explorerResourceIsFolder || resourceScheme == 'file'",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "project-bundler.bundleSelected",
+          "when": "explorerResourceIsFolder || resourceScheme == 'file'",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.109.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0"
+  },
+  "dependencies": {
+    "ignore": "^7.0.5"
+  }
+}

@@ -1,0 +1,12 @@
+out
+dist
+node_modules/
+.vscode-test/
+.vscode/
+*.vsix
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.jsonnode_modules/
+out/
+*.vsix
