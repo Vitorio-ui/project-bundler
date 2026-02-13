@@ -2,7 +2,7 @@
   "name": "project-bundler",
   "displayName": "Project Bundler (Context Builder for AI)",
   "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
@@ -34,19 +34,28 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Context builder",
+      "title": "Context Builder",
       "properties": {
         "projectBundler.includeFullTree": {
           "type": "boolean",
           "default": true,
-          "description": "Always include the full project tree structure.",
-          "markdownDescription": "Включать полное дерево проекта, даже если выбраны отдельные файлы."
+          "description": "%config.includeFullTree%" 
         },
         "projectBundler.maxFiles": {
           "type": "number",
           "default": 10000,
-          "description": "Warning limit for file count.",
-          "markdownDescription": "Лимит файлов, после которого появится предупреждение. Защита от зависания на гигантских монорепозиториях."
+          "description": "%config.maxFiles%"
+        },
+        "projectBundler.language": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "en", "ru", "es", "de", "fr", "ja", "zh-cn"],
+          "description": "%config.language%"
+        },
+        "projectBundler.customExcludes": {
+          "type": "array",
+          "default": [],
+          "description": "%config.customExcludes%"
         },
         "projectBundler.binaryExtensions": {
           "type": "array",
@@ -58,23 +67,23 @@
             ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".db", ".sqlite",
             ".pyc", ".class", ".jar", ".war"
           ],
-          "description": "List of file extensions to treat as binary (content will be skipped).",
-          "markdownDescription": "Список расширений, содержимое которых **не будет** читаться (чтобы не получить мусор в бандле)."
+          "description": "%config.binaryExtensions%",
+          "markdownDescription": "%config.binaryExtensions%"
         }
       }
     },
     "commands": [
       {
         "command": "project-bundler.runWorkspaceBundle",
-        "title": "BUNDLER: Full Project (Собрать всё)"
+        "title": "%command.fullProject%"
       },
       {
         "command": "project-bundler.enterLicense",
-        "title": "BUNDLER: Enter License Key (Unlock Pro)"
+        "title": "%command.license%"
       },
       {
         "command": "project-bundler.bundleSelected",
-        "title": "BUNDLER: Selected (Собрать выбранное)"
+        "title": "%command.selected%"
       }
     ],
     "menus": {

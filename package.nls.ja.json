@@ -1,0 +1,10 @@
+{
+    "config.includeFullTree": "常に完全なプロジェクトツリー構造を含める。",
+    "config.maxFiles": "ファイル数の警告制限。",
+    "config.language": "拡張機能の出力言語。",
+    "config.customExcludes": "除外する追加のグロブパターン。",
+    "config.binaryExtensions": "バイナリとして扱うファイル拡張子のリスト。",
+    "command.fullProject": "BUNDLER: プロジェクト全体",
+    "command.selected": "BUNDLER: 選択範囲をバンドル",
+    "command.license": "BUNDLER: ライセンスキーを入力"
+}

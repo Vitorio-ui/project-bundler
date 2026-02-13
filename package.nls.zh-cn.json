@@ -1,0 +1,10 @@
+{
+    "config.includeFullTree": "始终包含完整的项目树结构。",
+    "config.maxFiles": "文件数量警告限制。",
+    "config.language": "扩展输出语言。",
+    "config.customExcludes": "要排除的额外 glob 模式。",
+    "config.binaryExtensions": "视为二进制文件的扩展名列表（跳过内容）。",
+    "command.fullProject": "BUNDLER: 完整项目",
+    "command.selected": "BUNDLER: 打包选中项",
+    "command.license": "BUNDLER: 输入许可证密钥"
+}

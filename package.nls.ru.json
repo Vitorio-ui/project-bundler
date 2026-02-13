@@ -1,0 +1,9 @@
+{
+    "config.includeFullTree": "Всегда включать полное дерево проекта.",
+    "config.maxFiles": "Лимит файлов для предупреждения.",
+    "config.language": "Язык вывода расширения.",
+    "config.customExcludes": "Дополнительные паттерны для исключения.",
+    "command.fullProject": "BUNDLER: Собрать весь проект",
+    "command.selected": "BUNDLER: Собрать выбранное",
+    "command.license": "BUNDLER: Ввести ключ лицензии"
+}

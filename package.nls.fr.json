@@ -1,0 +1,10 @@
+{
+    "config.includeFullTree": "Toujours inclure l'arborescence complète du projet.",
+    "config.maxFiles": "Limite d'avertissement pour le nombre de fichiers.",
+    "config.language": "Langue de sortie de l'extension.",
+    "config.customExcludes": "Modèles glob supplémentaires à exclure.",
+    "config.binaryExtensions": "Liste des extensions de fichiers à traiter comme binaires.",
+    "command.fullProject": "BUNDLER: Projet Complet",
+    "command.selected": "BUNDLER: Empaqueter la sélection",
+    "command.license": "BUNDLER: Entrer la clé de licence"
+}

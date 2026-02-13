@@ -106,16 +106,27 @@ const translations: Translations = {
 };
 
 export function t(key: string): string {
-    let lang = vscode.env.language.toLowerCase();
+    // 1. Читаем настройку пользователя
+    const config = vscode.workspace.getConfiguration('projectBundler');
+    const userLang = config.get<string>('language', 'auto');
+
+    let lang = 'en';
+
+    if (userLang !== 'auto') {
+        lang = userLang;
+    } else {
+        // 2. Если auto, берем системный
+        lang = vscode.env.language.toLowerCase();
+    }
     
-    // Простая логика маппинга
+    // Нормализация кодов языков
     if (lang.startsWith('ru')) lang = 'ru';
     else if (lang.startsWith('es')) lang = 'es';
     else if (lang.startsWith('de')) lang = 'de';
     else if (lang.startsWith('fr')) lang = 'fr';
     else if (lang.startsWith('ja')) lang = 'ja';
     else if (lang.startsWith('zh')) lang = 'zh-cn';
-    else lang = 'en';
+    else lang = 'en'; // Дефолт
 
     const dict = translations[lang] || translations['en'];
     return dict[key] || key;

@@ -1,0 +1,10 @@
+{
+    "config.includeFullTree": "Always include the full project tree structure.",
+    "config.maxFiles": "Warning limit for file count.",
+    "config.language": "Extension output language (affects bundle content only).",
+    "config.customExcludes": "Additional glob patterns to exclude (works like custom .gitignore).",
+    "config.binaryExtensions": "List of file extensions to treat as binary (content skipped).",
+    "command.fullProject": "BUNDLER: Full Project",
+    "command.selected": "BUNDLER: Bundle Selected",
+    "command.license": "BUNDLER: Enter License Key"
+}
