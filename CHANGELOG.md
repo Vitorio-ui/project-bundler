@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2026-02-13
+## [0.1.1] - 2026-02-13
 ### Added
 - Initial release
 - Project structure bundling

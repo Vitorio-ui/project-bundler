@@ -2,7 +2,7 @@
   "name": "project-bundler",
   "displayName": "Project Bundler (Context Builder for AI)",
   "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
