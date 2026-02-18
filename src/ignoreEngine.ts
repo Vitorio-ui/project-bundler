@@ -1,4 +1,4 @@
-import * as vscode from 'vscode'; // Добавляем импорт vscode
+import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import ignore from 'ignore';
@@ -6,12 +6,36 @@ import ignore from 'ignore';
 export class IgnoreEngine {
     private ig = ignore();
     
-    // Хардкорные исключения (системные)
+    // System & Build artifacts for multiple languages
     private alwaysExclude = [
-        '.git/', '.idea/', '.vscode/', '.vs/', 
-        'node_modules/', '__pycache__/', 'venv/', 'env/',
-        '*.pyc', '*.pt', '*.safetensors', '.DS_Store', 'out/', 'dist/',
-        '*.vsix'
+        // Version Control
+        '.git/', '.svn/', '.hg/',
+        
+        // IDEs
+        '.idea/', '.vscode/', '.vs/',
+        
+        // JavaScript / TypeScript
+        'node_modules/', 'out/', 'dist/', 'coverage/',
+        
+        // Python
+        '__pycache__/', 'venv/', '.venv/', 'env/', '.env/', '.pytest_cache/', 
+        '*.pyc', '*.pyd', '*.pyo',
+        
+        // Java / Kotlin
+        '.gradle/', 'target/', 'build/', '*.class', '*.jar', '*.war',
+        
+        // C / C++ / C#
+        'bin/', 'obj/', 'Debug/', 'Release/', 'cmake-build-debug/', 'cmake-build-release/',
+        '*.exe', '*.dll', '*.so', '*.dylib', '*.o', '*.obj', '*.lib', '*.a', '*.pdb',
+        
+        // Rust
+        'target/', '*.rlib',
+        
+        // Go
+        'vendor/',
+        
+        // System
+        '.DS_Store', 'Thumbs.db'
     ];
 
     constructor(private workspaceRoot: string) {
@@ -19,7 +43,7 @@ export class IgnoreEngine {
     }
 
     private loadRules() {
-        // 1. Жесткие исключения
+        // 1. Hardcoded excludes
         this.ig.add(this.alwaysExclude);
 
         // 2. .gitignore
@@ -32,7 +56,7 @@ export class IgnoreEngine {
             }
         }
 
-        // 3. Пользовательские настройки (VS Code Settings)
+        // 3. User settings
         const config = vscode.workspace.getConfiguration('projectBundler');
         const customExcludes = config.get<string[]>('customExcludes', []);
         if (customExcludes.length > 0) {
@@ -44,10 +68,9 @@ export class IgnoreEngine {
         const relativePath = path.relative(this.workspaceRoot, fsPath);
         if (!relativePath || relativePath.startsWith('..')) { return false; }
         
-        // ignore lib требует пути с / (даже на Windows)
+        // ignore lib requires forward slashes
         const normalizedPath = relativePath.split(path.sep).join('/');
         
-        // Проверяем, не является ли путь корнем (пустая строка)
         if (!normalizedPath) return false;
 
         return this.ig.ignores(normalizedPath);

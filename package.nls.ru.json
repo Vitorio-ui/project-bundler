@@ -1,9 +1,16 @@
 {
+    "submenu.label": "Project Bundler: Контекст для ИИ",
+    "command.smartMenu": "Подготовить контекст для ИИ...",
+    "command.bundleSelectedSmart": "Собрать выбранное (Smart)",
+    "command.bundleFull": "Собрать весь проект",
+    "command.bundleMinimal": "Пресет: Минимальный (Pro)",
+    "command.bundleArch": "Пресет: Архитектура (Pro)",
+    "command.license": "Ввести Pro лицензию",
     "config.includeFullTree": "Всегда включать полное дерево проекта.",
     "config.maxFiles": "Лимит файлов для предупреждения.",
-    "config.language": "Язык вывода расширения.",
-    "config.customExcludes": "Дополнительные паттерны для исключения.",
+    "config.language": "Язык вывода.",
+    "config.customExcludes": "Исключения файлов.",
+    "config.binaryExtensions": "Бинарные расширения.",
     "command.fullProject": "BUNDLER: Собрать весь проект",
-    "command.selected": "BUNDLER: Собрать выбранное",
-    "command.license": "BUNDLER: Ввести ключ лицензии"
+    "command.selected": "BUNDLER: Собрать выбранное"
 }

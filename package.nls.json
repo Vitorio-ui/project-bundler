@@ -1,10 +1,16 @@
 {
+    "submenu.label": "Project Bundler",
+    "command.smartMenu": "Prepare Context for AI...",
+    "command.bundleSelectedSmart": "Bundle Selection (Smart)",
+    "command.bundleFull": "Bundle Full Project",
+    "command.bundleMinimal": "Preset: Minimal (Pro)",
+    "command.bundleArch": "Preset: Architecture (Pro)",
+    "command.license": "Enter Pro License",
     "config.includeFullTree": "Always include the full project tree structure.",
     "config.maxFiles": "Warning limit for file count.",
-    "config.language": "Extension output language (affects bundle content only).",
-    "config.customExcludes": "Additional glob patterns to exclude (works like custom .gitignore).",
-    "config.binaryExtensions": "List of file extensions to treat as binary (content skipped).",
+    "config.language": "Extension output language.",
+    "config.customExcludes": "Additional glob patterns to exclude.",
+    "config.binaryExtensions": "List of file extensions to treat as binary.",
     "command.fullProject": "BUNDLER: Full Project",
-    "command.selected": "BUNDLER: Bundle Selected",
-    "command.license": "BUNDLER: Enter License Key"
+    "command.selected": "BUNDLER: Bundle Selected"
 }

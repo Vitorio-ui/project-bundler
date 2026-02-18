@@ -1,115 +1,122 @@
+// /opt/project-bundler/src/bundler.ts
+
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { t } from './i18n';
+import { TreeGenerator } from './treeGenerator';
+import { TokenStats } from './tokenStats';
 
 export async function generateBundle(
-    rootPath: string, 
-    treeFiles: vscode.Uri[], 
-    contentFiles: vscode.Uri[]
+    rootPath: string,
+    allFiles: vscode.Uri[],
+    contentFiles: vscode.Uri[],
+    smartTree: boolean
 ): Promise<string> {
-    
+
     const config = vscode.workspace.getConfiguration('projectBundler');
-    const binaryExtensions = new Set(config.get('binaryExtensions', []) as string[]);
-
-    // --- ИСПРАВЛЕНИЕ 1: НАТУРАЛЬНАЯ СОРТИРОВКА КОНТЕНТА ---
-    contentFiles.sort((a, b) => {
-        return a.fsPath.localeCompare(b.fsPath, undefined, { numeric: true, sensitivity: 'base' });
-    });
-    // -----------------------------------------------------
-
-    const contentPathsSet = new Set(
-        contentFiles.map(f => path.relative(rootPath, f.fsPath))
+    const binaryExtensions = new Set(
+        (config.get<string[]>('binaryExtensions', [])).map(e => e.toLowerCase())
     );
 
-    let output = `PROJECT BUNDLE | ${path.basename(rootPath)}\n`;
-    output += `${t('generated')}: ${new Date().toLocaleString()}\n`;
-    const modeText = treeFiles.length === contentFiles.length ? t('modeFull') : t('modeTree');
-    output += `${t('mode')}: ${modeText}\n\n`;
-    
-    output += `================================================================================\n`;
-    output += `${t('structure')}\n`;
-    output += `(${t('legend')})\n\n`;
+    // -----------------------------
+    // 1. Сортировка файлов (стабильный порядок)
+    // -----------------------------
+    contentFiles.sort((a, b) =>
+        a.fsPath.localeCompare(b.fsPath, undefined, { numeric: true, sensitivity: 'base' })
+    );
 
-    const treePaths = treeFiles.map(f => path.relative(rootPath, f.fsPath)); 
-    // Сортировка treePaths происходит внутри renderTree, так что здесь можно не сортировать
-    
-    output += renderTree(treePaths, contentPathsSet);
-    
-    output += `\n================================================================================\n`;
-    output += `${t('contents')} (${contentFiles.length} files)\n\n`;
+    // -----------------------------
+    // 2. Сборка секции с контентом
+    // -----------------------------
+    let contentSection = '';
+    let processedCount = 0;
+    let skippedCount = 0;
 
     for (const fileUri of contentFiles) {
         const relativePath = path.relative(rootPath, fileUri.fsPath);
         const ext = path.extname(fileUri.fsPath).toLowerCase();
 
-        output += `--- FILE: ${relativePath} ---\n`;
-        
+        contentSection += `--- FILE: ${relativePath} ---\n`;
+
         if (binaryExtensions.has(ext)) {
-            output += `[Binary file or excluded extension: ${ext} - Content skipped]\n`;
+            contentSection += `[Binary or excluded extension: ${ext}]\n`;
+            skippedCount++;
         } else {
             try {
                 const content = await fs.readFile(fileUri.fsPath, 'utf8');
                 if (content.includes('\0')) {
-                     output += `[Binary content detected - skipped]\n`;
+                    contentSection += `[Binary content detected — skipped]\n`;
+                    skippedCount++;
                 } else {
-                    output += content + (content.endsWith('\n') ? '' : '\n');
+                    contentSection += content + (content.endsWith('\n') ? '' : '\n');
+                    processedCount++;
                 }
             } catch (err) {
-                output += `[Error reading file: ${err}]\n`;
+                contentSection += `[Error reading file: ${String(err)}]\n`;
             }
         }
-        output += `--- END OF FILE: ${relativePath} ---\n\n`;
+        contentSection += `--- END OF FILE: ${relativePath} ---\n\n`;
     }
 
-    return output;
-}
-
-function renderTree(paths: string[], contentSet: Set<string>): string {
-    let tree = '';
-    const treeObj: any = {};
-
-    paths.forEach(p => {
-        let current = treeObj;
-        const parts = p.split(path.sep);
-        parts.forEach((part, index) => {
-            if (!current[part]) { 
-                current[part] = { 
-                    __isNode: true, 
-                    __fullPath: parts.slice(0, index + 1).join(path.sep) 
-                }; 
-            }
-            current = current[part];
-        });
+    // -----------------------------
+    // 3. Подготовка дерева
+    // -----------------------------
+    const allPaths = allFiles.map(f => path.relative(rootPath, f.fsPath));
+    const selectedPaths = new Set(
+        contentFiles.map(f => path.relative(rootPath, f.fsPath))
+    );
+    const treeGen = new TreeGenerator({
+        rootPath,
+        allFilePaths: allPaths,
+        selectedPaths,
+        smartCompression: smartTree
     });
+    const tree = treeGen.generate();
+    
+    // -----------------------------
+    // 4. Черновой бандл (для подсчета статистики)
+    // -----------------------------
+    // Важно: Собираем без хедера, чтобы статистика была только по полезной нагрузке
+    const draftBundle =
+        tree +
+        (tree ? `\n================================================================================\n` : '') +
+        `${t('contents')} (${contentFiles.length} files)\n\n` +
+        contentSection;
 
-    const build = (obj: any, prefix = '') => {
-        // --- ИСПРАВЛЕНИЕ 2: НАТУРАЛЬНАЯ СОРТИРОВКА ДЕРЕВА ---
-        const keys = Object.keys(obj)
-            .filter(k => !k.startsWith('__'))
-            .sort((a, b) => {
-                // Магия: numeric: true заставляет '2' идти перед '10'
-                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-            });
-        // ----------------------------------------------------
-        
-        keys.forEach((key, index) => {
-            const isLast = index === keys.length - 1;
-            const node = obj[key];
-            const fullPath = node['__fullPath'];
-            const children = Object.keys(node).filter(k => !k.startsWith('__'));
-            const isFile = children.length === 0;
+    const totalChars = draftBundle.length;
+    const estTokens = TokenStats.estimate(draftBundle);
 
-            let suffix = '';
-            if (isFile && fullPath && !contentSet.has(fullPath)) {
-                suffix = ` [${t('excluded')}]`;
-            }
+    // -----------------------------
+    // 5. Финальный хедер (с точной статистикой)
+    // -----------------------------
+    let header = `PROJECT BUNDLE | ${path.basename(rootPath)}\n`;
+    header += `${t('generated')}: ${new Date().toLocaleString()}\n`;
 
-            tree += `${prefix}${isLast ? '└── ' : '├── '}${key}${suffix}\n`;
-            build(node, `${prefix}${isLast ? '    ' : '│   '}`);
-        });
-    };
+    // ИСПРАВЛЕНО: Теперь используем ключи перевода
+    const modeText = smartTree
+        ? t('modeSmart')
+        : (selectedPaths.size === allPaths.length ? t('modeFull') : t('modeSelected'));
 
-    build(treeObj);
-    return tree;
+    header += `${t('mode')}: ${modeText}\n`;
+    header += `\n`;
+    header += `${t('stats')}\n`;
+    header += `  - ${t('filesCount')}: ${contentFiles.length} (${processedCount} text, ${skippedCount} skipped)\n`;
+    header += `  - ${t('kb')}: ~${(totalChars / 1024).toFixed(1)} KB\n`;
+    header += `  - ${t('tokens')}: ~${TokenStats.format(estTokens)}\n`;
+
+    // -----------------------------
+    // 6. Финальная сборка
+    // -----------------------------
+    const finalBundle =
+        header +
+        `\n================================================================================\n` +
+        `${t('structure')}\n` +
+        `(${t('treeLegend')})\n\n` + // ИСПРАВЛЕНО: перевод легенды
+        tree +
+        `\n================================================================================\n` +
+        `${t('contents')} (${contentFiles.length} files)\n\n` +
+        contentSection;
+
+    return finalBundle.trimEnd();
 }

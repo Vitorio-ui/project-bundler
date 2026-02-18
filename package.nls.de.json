@@ -1,10 +1,16 @@
 {
+    "submenu.label": "Project Bundler",
+    "command.smartMenu": "Kontext für KI vorbereiten...",
+    "command.bundleSelectedSmart": "Auswahl bündeln (Smart)",
+    "command.bundleFull": "Gesamtes Projekt",
+    "command.bundleMinimal": "Preset: Minimal (Pro)",
+    "command.bundleArch": "Preset: Architektur (Pro)",
+    "command.license": "Pro Lizenz",
     "config.includeFullTree": "Immer die vollständige Projektstruktur einschließen.",
     "config.maxFiles": "Warnlimit für die Anzahl der Dateien.",
     "config.language": "Ausgabesprache der Erweiterung.",
     "config.customExcludes": "Zusätzliche Glob-Muster zum Ausschluss.",
     "config.binaryExtensions": "Liste der als binär zu behandelnden Dateierweiterungen.",
     "command.fullProject": "BUNDLER: Ganzes Projekt",
-    "command.selected": "BUNDLER: Auswahl bündeln",
-    "command.license": "BUNDLER: Lizenzschlüssel eingeben"
+    "command.selected": "BUNDLER: Auswahl bündeln"
 }

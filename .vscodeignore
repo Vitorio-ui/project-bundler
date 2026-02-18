@@ -12,3 +12,6 @@ vsc-extension-quickstart.md
 test/**
 images/demo.psd
 tsconfig.json
+docs/**
+**/update-locales.js
+**/changes.diff

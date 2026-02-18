@@ -2,36 +2,25 @@
   "name": "project-bundler",
   "displayName": "Project Bundler (Context Builder for AI)",
   "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
-    "ai",
-    "chatgpt",
-    "gemini",
-    "claude",
-    "deepseek",
-    "llm",
-    "context",
-    "bundle",
-    "prompt engineering",
-    "project structure",
-    "code analysis",
-    "copilot",
-    "token optimizer"
+    "ai", "chatgpt", "gemini", "claude", "deepseek", "llm", "context", "bundle", "prompt engineering", "project structure", "code analysis", "copilot", "token optimizer", "python", "rust", "cpp", "javascript"
   ],
   "engines": {
     "vscode": "^1.109.0"
   },
   "categories": [
-    "Other", "Programming Languages"
+    "Other",
+    "Programming Languages"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Vitorio-ui/project-bundler"
   },
-  "activationEvents": [],
   "main": "./out/extension.js",
+  "activationEvents": [],
   "contributes": {
     "configuration": {
       "title": "Context Builder",
@@ -39,7 +28,12 @@
         "projectBundler.includeFullTree": {
           "type": "boolean",
           "default": true,
-          "description": "%config.includeFullTree%" 
+          "description": "%config.includeFullTree%"
+        },
+        "projectBundler.smartTree": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable smart tree compression (Pro feature). Automatically collapses irrelevant folders."
         },
         "projectBundler.maxFiles": {
           "type": "number",
@@ -49,7 +43,7 @@
         "projectBundler.language": {
           "type": "string",
           "default": "auto",
-          "enum": ["auto", "en", "ru", "es", "de", "fr", "ja", "zh-cn"],
+          "enum": [ "auto", "en", "ru", "es", "de", "fr", "ja", "zh-cn" ],
           "description": "%config.language%"
         },
         "projectBundler.customExcludes": {
@@ -62,43 +56,84 @@
           "default": [
             ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp",
             ".mp3", ".wav", ".mp4", ".avi", ".mov", ".mkv",
-            ".zip", ".tar", ".gz", ".7z", ".rar",
+            ".zip", ".tar", ".gz", ".7z", ".rar", ".jar", ".war",
             ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
             ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".db", ".sqlite",
-            ".pyc", ".class", ".jar", ".war"
+            ".pyc", ".pyd",
+            ".class", ".obj", ".o", ".a", ".lib", ".pdb", ".suo",
+            ".ncb", ".idb", ".rlib", ".exp"
           ],
-          "description": "%config.binaryExtensions%",
-          "markdownDescription": "%config.binaryExtensions%"
+          "description": "%config.binaryExtensions%"
         }
       }
     },
+    "submenus": [
+      {
+        "id": "project-bundler.ctxMenu",
+        "label": "%command.smartMenu%",
+        "icon": "$(layers)"
+      }
+    ],
     "commands": [
       {
-        "command": "project-bundler.runWorkspaceBundle",
-        "title": "%command.fullProject%"
+        "command": "project-bundler.bundleSelectedSmart",
+        "title": "%command.bundleSelectedSmart%",
+        "icon": "$(file-zip)"
+      },
+      {
+        "command": "project-bundler.bundleFull",
+        "title": "%command.bundleFull%",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "project-bundler.bundleMinimal",
+        "title": "%command.bundleMinimal%",
+        "icon": "$(gist)"
+      },
+      {
+        "command": "project-bundler.bundleArch",
+        "title": "%command.bundleArch%",
+        "icon": "$(organization)"
       },
       {
         "command": "project-bundler.enterLicense",
-        "title": "%command.license%"
+        "title": "%command.license%",
+        "icon": "$(key)"
       },
       {
-        "command": "project-bundler.bundleSelected",
-        "title": "%command.selected%"
+        "command": "project-bundler.resetState",
+          "title": "Bundler: Reset Settings & Early Access",
+          "icon": "$(refresh)"
       }
     ],
     "menus": {
-      "view/item/context": [
-        {
-          "command": "project-bundler.bundleSelected",
-          "when": "explorerResourceIsFolder || resourceScheme == 'file'",
-          "group": "navigation"
-        }
-      ],
       "explorer/context": [
         {
-          "command": "project-bundler.bundleSelected",
-          "when": "explorerResourceIsFolder || resourceScheme == 'file'",
-          "group": "navigation"
+          "submenu": "project-bundler.ctxMenu",
+          "group": "navigation", 
+          "when": "explorerResourceIsFolder || resourceScheme == 'file'"
+        }
+      ],
+      "project-bundler.ctxMenu": [
+        {
+          "command": "project-bundler.bundleSelectedSmart",
+          "group": "1_main"
+        },
+        {
+          "command": "project-bundler.bundleFull",
+          "group": "1_main"
+        },
+        {
+          "command": "project-bundler.bundleMinimal",
+          "group": "2_presets"
+        },
+        {
+          "command": "project-bundler.bundleArch",
+          "group": "2_presets"
+        },
+        {
+          "command": "project-bundler.enterLicense",
+          "group": "3_settings"
         }
       ]
     }
@@ -107,19 +142,13 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "lint": "eslint src"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.109.0",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.2",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "ignore": "^7.0.5"

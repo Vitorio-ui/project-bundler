@@ -3,104 +3,97 @@ import { IgnoreEngine } from './ignoreEngine';
 import { generateBundle } from './bundler';
 import { t } from './i18n';
 import { LicenseManager } from './licenseManager';
+import { PresetEngine, PresetType } from './presetEngine';
+
+interface BundlerOptions {
+    smartTree: boolean;
+    preset: PresetType;
+}
 
 export function activate(context: vscode.ExtensionContext) {
-    
     const licenseManager = new LicenseManager(context);
 
-    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.enterLicense', async () => {
-        await licenseManager.promptForLicense();
+    // --- Dev / Reset Commands ---
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.devToggle', async () => {
+        await licenseManager.toggleDevProMode();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.resetLicense', async () => {
-        await licenseManager.resetLicense();
-        vscode.window.showInformationMessage('Limits reset.');
+    // Добавляем команду сброса состояния (полезно для юзеров, если нажали не туда)
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.resetState', async () => {
+        await licenseManager.resetState();
     }));
 
-    const runBundler = async (selectedFiles?: vscode.Uri[]) => {
-        // Поддержка Multi-root workspace: берем тот проект, которому принадлежит первый выбранный файл
-        let rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+    const runBundler = async (targets: vscode.Uri[], options: BundlerOptions) => {
+        // ... (код получения rootPath и конфига) ...
+        let rootPath: string | undefined;
+        if (targets.length > 0) {
+            const workspace = vscode.workspace.getWorkspaceFolder(targets[0]);
+            rootPath = workspace?.uri.fsPath;
+        } else {
+            rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+        }
+        if (!rootPath) { vscode.window.showErrorMessage(t('errorRoot')); return; }
+
+        const config = vscode.workspace.getConfiguration('projectBundler');
+        const maxFilesWarning = config.get('maxFiles', 10000) as number;
+        const userSmartSetting = config.get('smartTree', true);
         
-        if (selectedFiles && selectedFiles.length > 0) {
-            const workspace = vscode.workspace.getWorkspaceFolder(selectedFiles[0]);
-            if (workspace) {
-                rootPath = workspace.uri.fsPath;
+        // --- LOGIC GATES ---
+
+        let useSmartTree = false;
+        
+        // 1. Проверяем Smart Tree (Early Access Gate)
+        if (options.preset !== PresetType.Full && (options.smartTree && userSmartSetting)) {
+            const allowed = await licenseManager.checkEarlyAccess("Smart Tree Compression");
+            if (!allowed) {
+                // Если отказался, продолжаем, но БЕЗ smart tree
+                useSmartTree = false; 
+            } else {
+                useSmartTree = true;
             }
         }
 
-        if (!rootPath) {
-            vscode.window.showErrorMessage(t('errorRoot'));
-            return;
+        // 2. Проверяем Пресеты (Strict Gate)
+        if (options.preset === PresetType.Minimal || options.preset === PresetType.Architecture) {
+            const allowed = await licenseManager.checkStrictPro(`${options.preset} Preset`);
+            if (!allowed) return; // Прерываем выполнение
         }
 
-        const config = vscode.workspace.getConfiguration('projectBundler');
-        const alwaysFullTree = config.get('includeFullTree', true);
-        const maxFilesWarning = config.get('maxFiles', 10000) as number;
-        
-        // Создаем движок с учетом новых настроек
         const ignoreEngine = new IgnoreEngine(rootPath);
+        const presetEngine = new PresetEngine(ignoreEngine, rootPath);
         
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Context Builder",
+            title: "Project Bundler",
             cancellable: false
         }, async (progress) => {
             
-            // 1. Сборка БАЗОВОГО ДЕРЕВА (все, что не игнорируется)
-            let treeFiles: vscode.Uri[] = [];
-            if (alwaysFullTree) {
-                progress.report({ message: t('scan') });
-                const allFiles = await vscode.workspace.findFiles('**/*', null, maxFilesWarning + 1000);
-                treeFiles = allFiles.filter(f => !ignoreEngine.isIgnored(f.fsPath));
-            }
+            progress.report({ message: t('scan') });
+            const allFilesRaw = await vscode.workspace.findFiles('**/*', null, maxFilesWarning + 1000);
+            let treeFiles = allFilesRaw.filter(f => !ignoreEngine.isIgnored(f.fsPath));
 
-            // 2. Сборка КОНТЕНТА (Выбранное пользователем)
-            let contentFiles: vscode.Uri[] = [];
-            if (selectedFiles && selectedFiles.length > 0) {
-                progress.report({ message: t('scanSelected') });
-                for (const uri of selectedFiles) {
-                    const stats = await vscode.workspace.fs.stat(uri);
-                    if (stats.type === vscode.FileType.Directory) {
-                        const pattern = new vscode.RelativePattern(uri, '**/*');
-                        const folderFiles = await vscode.workspace.findFiles(pattern);
-                        // Для папок мы применяем фильтр, чтобы не тащить мусор
-                        contentFiles.push(...folderFiles.filter(f => !ignoreEngine.isIgnored(f.fsPath)));
-                    } else {
-                        // ВАЖНО: Если выбран конкретный файл, мы его добавляем, даже если он ignored!
-                        // (Пользователь лучше знает, что ему нужно)
-                        contentFiles.push(uri);
-                    }
-                }
-                
-                // Если FullTree выключен, дерево = только выбранные файлы
-                if (!alwaysFullTree) treeFiles = [...contentFiles];
-            } else {
-                // Если ничего не выбрано -> берем всё неигнорируемое
-                progress.report({ message: t('scan') });
-                if (treeFiles.length === 0) {
-                    const allFiles = await vscode.workspace.findFiles('**/*', null, maxFilesWarning + 1000);
-                    treeFiles = allFiles.filter(f => !ignoreEngine.isIgnored(f.fsPath));
-                }
-                contentFiles = treeFiles;
-            }
+            progress.report({ message: t('scanSelected') });
+            const contentFiles = await presetEngine.getFiles(options.preset, targets);
 
-            // --- SMART PATH MERGE ---
-            // Добавляем contentFiles в treeFiles, чтобы гарантировать, что путь к ним будет отрисован,
-            // даже если родительская папка была исключена из базового сканирования.
-            // Используем Set строковых путей для удаления дубликатов.
+            // Merge paths logic...
             const uniquePaths = new Set(treeFiles.map(u => u.fsPath));
-            contentFiles.forEach(u => uniquePaths.add(u.fsPath));
-            
-            // Превращаем обратно в Uri (немного костыльно, но надежно)
-            treeFiles = Array.from(uniquePaths).map(p => vscode.Uri.file(p));
-            // ------------------------
+            let addedNew = false;
+            contentFiles.forEach(u => {
+                if (!uniquePaths.has(u.fsPath)) {
+                    uniquePaths.add(u.fsPath);
+                    addedNew = true;
+                }
+            });
+            if (addedNew) {
+                treeFiles = Array.from(uniquePaths).map(p => vscode.Uri.file(p));
+            }
 
-            // Проверка лимитов
-            const allowed = await licenseManager.checkLimits(contentFiles);
-            if (!allowed) return; 
+            // Soft Limits Check (из предыдущего шага)
+            // const limitsOk = await licenseManager.checkLimits(contentFiles);
+            // if (!limitsOk) return;
 
             progress.report({ message: "Packing bundle..." });
-            const finalContent = await generateBundle(rootPath, treeFiles, contentFiles);
+            const finalContent = await generateBundle(rootPath!, treeFiles, contentFiles, useSmartTree);
 
             const doc = await vscode.workspace.openTextDocument({ content: finalContent, language: 'markdown' });
             await vscode.window.showTextDocument(doc);
@@ -110,10 +103,30 @@ export function activate(context: vscode.ExtensionContext) {
         });
     };
 
-    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.runWorkspaceBundle', () => runBundler()));
-    
-    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.bundleSelected', (uri: vscode.Uri, allUris: vscode.Uri[]) => {
-        const targets = allUris && allUris.length > 0 ? allUris : [uri];
-        runBundler(targets);
+    // --- COMMANDS ---
+
+    // Free / Early Access
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.bundleSelectedSmart', (uri: vscode.Uri, allUris: vscode.Uri[]) => {
+        const targets = allUris && allUris.length > 0 ? allUris : (uri ? [uri] : []);
+        runBundler(targets, { smartTree: true, preset: PresetType.Selected });
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.bundleFull', () => {
+        runBundler([], { smartTree: false, preset: PresetType.Full });
+    }));
+
+    // Pro Presets (Strict Gate)
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.bundleMinimal', async () => {
+        // Передаем targets пустые, так как пресеты обычно работают от корня, 
+        // но если логика изменится, можно передавать контекст
+        runBundler([], { smartTree: true, preset: PresetType.Minimal });
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.bundleArch', async () => {
+        runBundler([], { smartTree: true, preset: PresetType.Architecture });
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('project-bundler.enterLicense', async () => {
+        await licenseManager.promptForLicense();
     }));
 }

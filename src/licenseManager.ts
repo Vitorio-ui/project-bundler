@@ -1,88 +1,156 @@
+// /opt/project-bundler/src/licenseManager.ts
+
 import * as vscode from 'vscode';
-import * as crypto from 'crypto';
 
 export class LicenseManager {
     private context: vscode.ExtensionContext;
-    
-    // --- SOFT LIMITS FOR MVP LAUNCH ---
-    private readonly FREE_MAX_FILES = 100;       // Увеличили (было 20)
-    private readonly FREE_MAX_SIZE_BYTES = 500 * 1024; // 500 KB (было 200)
-    private readonly FREE_DAILY_LIMIT = 10;      // 10 сборок в день (было 5)
-    
-    // Секрет убрали. Для MVP он пока не нужен, так как Pro выключен.
-    // В будущем будем внедрять через переменные окружения при сборке.
+
+    private readonly KEY_EARLY_ACCESS = 'projectBundler.earlyAccessAccepted';
+    private readonly KEY_DEV_PRO = 'projectBundler.devOverride';
+
+    private readonly WARN_FILE_COUNT = 300;
+    private readonly WARN_SIZE_BYTES = 500 * 1024;
+    private readonly WARN_DAILY_USAGE = 50;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
     }
 
+    // -----------------------------
+    // Pro status
+    // -----------------------------
     public isPro(): boolean {
-        // ВРЕМЕННО: Pro режим выключен для всех на этапе запуска
+        return this.context.globalState.get<boolean>(this.KEY_DEV_PRO, false);
+    }
+
+    public async toggleDevProMode() {
+        const next = !this.isPro();
+        await this.context.globalState.update(this.KEY_DEV_PRO, next);
+        vscode.window.showInformationMessage(`Dev Pro Mode: ${next ? 'ON' : 'OFF'}`);
+    }
+
+    // -----------------------------
+    // Early Access Gate
+    // -----------------------------
+    public async checkEarlyAccess(featureName: string): Promise<boolean> {
+        if (this.isPro()) return true;
+
+        const accepted = this.context.globalState.get<boolean>(this.KEY_EARLY_ACCESS, false);
+        if (accepted) return true;
+
+        const choice = await vscode.window.showInformationMessage(
+            `✨ "${featureName}" is a Pro feature available during Early Access.`,
+            { modal: true },
+            "Use (Early Access)",
+            "Disable feature"
+        );
+
+        if (choice === "Use (Early Access)") {
+            await this.context.globalState.update(this.KEY_EARLY_ACCESS, true);
+            return true;
+        }
+
         return false;
     }
 
-    public async checkLimits(files: vscode.Uri[]): Promise<boolean> {
-        // Проверяем дневной лимит
-        const dailyCheck = await this.checkDailyUsage();
-        if (!dailyCheck) return false;
+    // -----------------------------
+    // Hard Pro Gate (future)
+    // -----------------------------
+    public async checkStrictPro(featureName: string): Promise<boolean> {
+        if (this.isPro()) return true;
 
-        // Проверяем количество файлов
-        if (files.length > this.FREE_MAX_FILES) {
-            vscode.window.showErrorMessage(`Early Access Limit: Maximum ${this.FREE_MAX_FILES} files allowed per bundle. You selected ${files.length}.`);
-            return false;
+        const choice = await vscode.window.showInformationMessage(
+            `💎 "${featureName}" requires Pro (coming in v1.0).`,
+            "Notify me", "Close"
+        );
+
+        if (choice === "Notify me") {
+            vscode.env.openExternal(
+                vscode.Uri.parse('https://github.com/Vitorio-ui/project-bundler')
+            );
+        }
+        return false;
+    }
+
+    // -----------------------------
+    // Soft limits
+    // -----------------------------
+    public async checkLimits(files: vscode.Uri[]): Promise<boolean> {
+
+        const dailyCount = this.getDailyCount();
+        if (dailyCount > this.WARN_DAILY_USAGE && dailyCount % 10 === 0) {
+            vscode.window.showWarningMessage(
+                `You've generated ${dailyCount} bundles today. Thanks for using Project Bundler!`
+            );
         }
 
-        // Проверяем вес
+        if (files.length > this.WARN_FILE_COUNT) {
+            const choice = await vscode.window.showWarningMessage(
+                `Large selection (${files.length} files). This may be slow.`,
+                "Proceed", "Cancel"
+            );
+            if (choice !== "Proceed") return false;
+        }
+
         let totalSize = 0;
         for (const file of files) {
-            try { totalSize += (await vscode.workspace.fs.stat(file)).size; } catch(e){}
-        }
-        if (totalSize > this.FREE_MAX_SIZE_BYTES) {
-            vscode.window.showErrorMessage(`Early Access Limit: Maximum 500KB allowed per bundle.`);
-            return false;
+            try {
+                totalSize += (await vscode.workspace.fs.stat(file)).size;
+            } catch {}
         }
 
-        // Засчитываем использование
+        if (totalSize > this.WARN_SIZE_BYTES) {
+            const sizeKB = (totalSize / 1024).toFixed(0);
+            const choice = await vscode.window.showWarningMessage(
+                `Large bundle (~${sizeKB} KB). May exceed LLM context.`,
+                "Proceed", "Cancel"
+            );
+            if (choice !== "Proceed") return false;
+        }
+
         await this.incrementDailyUsage();
         return true;
     }
 
-    private async checkDailyUsage(): Promise<boolean> {
+    // -----------------------------
+    // Counters
+    // -----------------------------
+    private getDailyCount(): number {
         const today = new Date().toDateString();
-        const lastDate = this.context.globalState.get<string>('projectBundler.lastUsageDate', '');
-        let count = this.context.globalState.get<number>('projectBundler.dailyCount', 0);
+        const lastDate = this.context.globalState.get<string>('projectBundler.lastUsageDate');
 
-        if (lastDate !== today) {
-            count = 0;
-            await this.context.globalState.update('projectBundler.lastUsageDate', today);
-            await this.context.globalState.update('projectBundler.dailyCount', 0);
-        }
-
-        if (count >= this.FREE_DAILY_LIMIT) {
-            vscode.window.showErrorMessage(`Daily Limit Reached (${this.FREE_DAILY_LIMIT}/${this.FREE_DAILY_LIMIT}). Server load protection. Please come back tomorrow!`);
-            return false;
-        }
-        return true;
+        if (lastDate !== today) return 0;
+        return this.context.globalState.get<number>('projectBundler.dailyCount', 0);
     }
 
     private async incrementDailyUsage() {
-        const count = this.context.globalState.get<number>('projectBundler.dailyCount', 0);
+        const today = new Date().toDateString();
+        const lastDate = this.context.globalState.get<string>('projectBundler.lastUsageDate');
+
+        let count = this.context.globalState.get<number>('projectBundler.dailyCount', 0);
+        if (lastDate !== today) {
+            count = 0;
+            await this.context.globalState.update('projectBundler.lastUsageDate', today);
+        }
+
         await this.context.globalState.update('projectBundler.dailyCount', count + 1);
     }
 
-    /**
-     * Заглушка для ввода лицензии
-     */
+    // -----------------------------
+    // UX
+    // -----------------------------
     public async promptForLicense() {
-        await vscode.window.showInformationMessage(
-            "💎 Pro Version with unlimited access is currently in development! Enjoy the Free Early Access version.",
-            "OK"
+        vscode.window.showInformationMessage(
+            this.isPro()
+                ? "💎 Pro License Active (Dev Mode)"
+                : "💎 Pro version is in development. You're using Free / Early Access."
         );
     }
-    
-    // Метод для сброса (оставляем для отладки, но команду можно скрыть)
-    public async resetLicense() {
-         await this.context.globalState.update('projectBundler.licenseKey', undefined);
-         await this.context.globalState.update('projectBundler.dailyCount', 0);
+
+    public async resetState() {
+        await this.context.globalState.update(this.KEY_EARLY_ACCESS, undefined);
+        await this.context.globalState.update('projectBundler.dailyCount', 0);
+        await this.context.globalState.update('projectBundler.lastUsageDate', undefined);
+        vscode.window.showInformationMessage("Project Bundler state reset.");
     }
 }

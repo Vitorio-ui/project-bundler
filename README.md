@@ -1,7 +1,5 @@
 # 📦 Project Bundler — Context Builder for AI
 
-**One-click project context builder for ChatGPT, Claude and other LLMs.**
-
 <div align="center">
   <img src="icon.png" width="128" height="128" alt="Context Builder Logo">
   
@@ -13,6 +11,8 @@
 
 Project Bundler helps you package your project structure and selected source code
 into a single, clean, AI-friendly text bundle — ready to paste into any LLM.
+
+**Stop copying files manually. Start building better context.**
 
 > No servers. No telemetry. Fully local.
 
@@ -41,128 +41,84 @@ Perfect for:
 
 ---
 
-## ✨ Features (MVP)
+## 🚀 Features
 
-- 📁 **Project Tree Visualization**  
-  Generates a clean ASCII tree of your project structure.
+### 🧠 Smart Tree (Early Access)
+Instead of dumping a 500-file tree structure, Project Bundler intelligently collapses folders irrelevant to your selection.
+*   **Focus:** Shows context only around selected files.
+*   **Compression:** Collapses unrelated folders (e.g., `tests/ ... [collapsed: 42 files]`).
+*   **Token Savings:** Reduces visual noise and token count significantly.
 
-- 🎯 **Selective Context**  
-  Bundle only selected files while still showing the full project tree  
-  (non-included files are marked as `[excluded]`).
+### 📊 Token Stats (Free)
+Every bundle includes:
+*   Estimated token count (tree + content)
+*   Total size in KB
+*   Helps avoid LLM context overflow
 
-- 🙈 **Smart Ignore Engine**  
-  Respects `.gitignore` and common exclusions (`node_modules`, `.git`, binaries, etc.).
+### 🌍 Polyglot Support
+Works out-of-the-box with pre-configured ignore rules for:
+*   **Web:** JS/TS, React, Vue, HTML/CSS
+*   **Backend:** Node.js, Python (`__pycache__` ignored), Go (`vendor` ignored)
+*   **Systems:** C++, Rust (`target` ignored), Java/Kotlin
+*   **Common:** `.git`, `.vscode`, lockfiles, binary artifacts are excluded automatically.
 
-- 🌍 **Multi-language UI**  
-  English, Russian, Spanish, German, French, Japanese, Chinese.
+### 🌍 **Multi-language Output**
+The generated bundle (headers, stats, structure notes) respects your language settings.
+Supported: English, Russian, Spanish, German, French, Japanese, Chinese.
 
-- 🔒 **Privacy-first**  
-  No network requests. No data collection. Works fully offline.
-
----
-
-## 🧠 How it works
-
-1. Right-click on a file or folder in VS Code
-2. Choose **“BUNDLER: Bundle selected”**
-3. Paste the generated bundle into ChatGPT / Claude / LLM
-
-That’s it.
-
----
-
-## 🧭 Usage
-
-### Bundle selected files
-- Select one or more files/folders in Explorer
-- Right-click → **BUNDLER: Bundle selected**
-
-### Bundle entire project
-- Open Command Palette (`Ctrl+Shift+P`)
-- Run **BUNDLER: Bundle entire project**
+### 🔒 **Privacy-first**  
+No network requests. No data collection. Works fully offline.
 
 ---
 
-## 🌍 Language
+## 🧭 How to use
 
-Project Bundler automatically uses the VS Code UI language.
-
-No manual language selection is required.
+1.  **Right-click** on any folder or file in VS Code Explorer.
+2.  Look for **"Prepare Context for AI..."** (it's at the top of the menu).
+3.  Choose **"Bundle Selection (Smart)"** or another preset.
+4.  Paste into your favorite LLM.
 
 ---
 
 ## ⚙️ Settings
 
-Project Bundler can be configured via VS Code settings.
-
-### `projectBundler.includeFullTree`
-- **Type:** boolean  
-- **Default:** `true`
-
-Always show the full project tree, even when bundling only selected files.
-When disabled, the tree will include only bundled files.
-
----
-
-### `projectBundler.binaryExtensions`
-- **Type:** array of strings  
-- **Default:** common binary formats (`.png`, `.jpg`, `.zip`, etc.)
-
-List of file extensions whose contents will be skipped.
-This prevents binary or non-text files from polluting the bundle output.
-
-The files will still appear in the project tree, but their contents will not be included.
+*   `projectBundler.smartTree`: Enable/disable automatic tree compression (Default: `true`).
+*   `projectBundler.maxFiles`: Warning limit to prevent freezing on massive repos.
+*   `projectBundler.binaryExtensions`: List of file extensions to skip content from.
+*   `projectBundler.customExcludes`: Add your own glob patterns to the ignore list.
+*   `projectBundler.language`:
+  * `auto` (default) — matches VS Code UI language
+  * `en`, `ru`, `es`, `de`, `fr`, `ja`, `zh-cn` — forces bundle output language
 
 ---
 
-### `projectBundler.maxFiles`
-- **Type:** number  
-- **Default:** safe preset (e.g. 300)
+## 💎 Free vs Pro
 
-Soft safety limit.
-When the number of files exceeds this value, Project Bundler shows a warning
-to prevent accidental freezes on large monorepositories.
+We believe in a usable Free tier, not a crippled demo.
 
-This does **not** block bundling — it is only a warning.
+| Feature | Free (Early Access) | Pro (v1.0 Goal) |
+| :--- | :---: | :---: |
+| **Context Builder** (Manual selection) | ✅ | ✅ |
+| **Full Project Tree** | ✅ | ✅ |
+| **Token Stats** | ✅ | ✅ |
+| **Ignore Engine** (.gitignore + auto rules) | ✅ | ✅ |
+| **Custom Excludes** (manual ignore rules) | ❌ | ✅ |
+| **Smart Tree Compression** | ✅ (Opt-in) | ✅ |
+| **Context Presets** (Minimal, Arch, Debug) | ❌ | ✅ |
+| **File Ordering Engine** | ❌ | ✅ |
+| **Priority Support** | ❌ | ✅ |
 
----
-
-## 📄 Output format
-
-The generated bundle contains:
-
-* project metadata
-* full project tree
-* clearly separated file contents
-* explicit start/end markers per file
-
-Designed to be:
-
-* readable by humans
-* friendly for LLM tokenizers
+> **Note on Early Access:** Smart Tree is a premium feature. It is currently enabled for all users to gather feedback. In version 1.0, it will be part of the Pro plan.
 
 ---
 
-## 🔐 Privacy
+## ❓ Troubleshooting
 
-Project Bundler:
+**Q: I accidentally clicked "No" on the Smart Tree dialog. How do I enable it?**
+A: Open Command Palette (`Ctrl+Shift+P`) and run **"BUNDLER: Reset Settings & Early Access"**. Next time you bundle, it will ask you again.
 
-* does NOT collect any data
-* does NOT send network requests
-* does NOT track usage
-* works 100% locally
-
----
-
-## 🔮 Planned features (in development)
-
-These features are **not implemented yet**, but planned:
-
-* Context presets (Architecture / Debug / Minimal)
-* Token-aware bundling
-* Output templates
-* Bundle size hints for LLMs
-* Optional Pro features (details later)
+**Q: Does it send my code anywhere?**
+A: No. Everything runs locally on your machine.
 
 ---
 
