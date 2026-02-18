@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1] - 2026-02-18
+### Fixed
+- **Smart Tree Logic:** Completely overhauled the tree compression algorithm to fix overly aggressive and noisy output. The new context-aware logic now correctly:
+  - Displays a context "radius" of ±2 files around selected items.
+  - Collapses fully irrelevant folders into a single summary line (e.g., `folder/ (2 folders, 5 files hidden)`).
+  - Groups multiple hidden items inside a relevant folder into a clean final summary.
+  - This results in a much more readable and useful tree structure for LLM context.
+
 ## [0.2.0] - 2026-02-18
 
 ### Added

@@ -1,3 +1,5 @@
+/* --- src/treeGenerator.ts --- */
+
 import * as path from 'path';
 
 interface TreeNode {
@@ -17,7 +19,7 @@ export interface TreeOptions {
 
 export class TreeGenerator {
     private root: TreeNode;
-    private readonly CONTEXT_RADIUS = 2; // ±2 files around a selected one
+    private readonly CONTEXT_RADIUS = 2; // ±2 файла вокруг выбранного
 
     constructor(private options: TreeOptions) {
         this.root = { 
@@ -31,15 +33,11 @@ export class TreeGenerator {
     }
 
     private buildTree() {
-        // Build the tree structure and mark nodes that have selected content
         for (const filePath of this.options.allFilePaths) {
             const parts = filePath.split(path.sep);
             let currentNode = this.root;
-            
             const isSelected = this.options.selectedPaths.has(filePath);
-            if (isSelected) {
-                currentNode.hasSelectedContent = true;
-            }
+            if (isSelected) currentNode.hasSelectedContent = true;
 
             for (let i = 0; i < parts.length; i++) {
                 const part = parts[i];
@@ -48,112 +46,108 @@ export class TreeGenerator {
 
                 let child = currentNode.children.find(c => c.name === part);
                 if (!child) {
-                    child = { 
-                        name: part, 
-                        path: currentPath, 
-                        isFile, 
-                        children: [],
-                        hasSelectedContent: false
-                    };
+                    child = { name: part, path: currentPath, isFile, children: [], hasSelectedContent: false };
                     currentNode.children.push(child);
                 }
-
-                if (isSelected) {
-                    child.hasSelectedContent = true;
-                }
+                if (isSelected) child.hasSelectedContent = true;
                 currentNode = child;
             }
         }
     }
 
     public generate(): string {
-        // Start rendering from the root's children, not the root itself.
         return this.renderNode(this.root, '', true);
     }
     
-    private countDescendantFiles(node: TreeNode): number {
+    // Исправленный, более простой счетчик
+    private countDescendants(node: TreeNode): { folders: number, files: number } {
         if (node.isFile) {
-            return 1;
+            return { folders: 0, files: 1 };
         }
-        return node.children.reduce((sum, child) => sum + this.countDescendantFiles(child), 0);
+        const stats = { folders: 0, files: 0 };
+        for (const child of node.children) {
+            if (child.isFile) {
+                stats.files++;
+            } else {
+                stats.folders++;
+                const childStats = this.countDescendants(child);
+                stats.folders += childStats.folders;
+                stats.files += childStats.files;
+            }
+        }
+        return stats;
     }
-    
+
     private renderNode(node: TreeNode, prefix: string, isRoot: boolean): string {
         let output = '';
-
-        node.children.sort((a, b) => {
-            if (a.isFile === b.isFile) {
-                return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
-            }
+        
+        const children = [...node.children].sort((a, b) => {
+            if (a.isFile === b.isFile) return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
             return a.isFile ? 1 : -1;
         });
 
-        // Smart Compression Logic
-        if (this.options.smartCompression && !node.hasSelectedContent && !isRoot) {
-            const fileCount = this.countDescendantFiles(node);
-            if (fileCount > 0) {
-                return `${prefix}├── ${node.name}/ ... [collapsed: ${fileCount} files]\n`;
-            }
-            return ''; // Don't render empty, unselected folders
-        }
-        
-        const childrenToRender = node.children;
+        // 1. Определяем, какие элементы показывать
         const visibleIndices = new Set<number>();
-
         if (this.options.smartCompression && !isRoot) {
-            childrenToRender.forEach((child, index) => {
-                // Directories with selected content are always visible
-                if (!child.isFile && child.hasSelectedContent) {
-                    visibleIndices.add(index);
+            children.forEach((child, idx) => {
+                if (child.hasSelectedContent) { // Активные дети всегда видны
+                    visibleIndices.add(idx);
                 }
-                // Selected files and their context are visible
                 if (child.isFile && this.options.selectedPaths.has(child.path)) {
-                    for (let i = -this.CONTEXT_RADIUS; i <= this.CONTEXT_RADIUS; i++) {
-                        const contextIndex = index + i;
-                        if (contextIndex >= 0 && contextIndex < childrenToRender.length) {
-                            // only add files to context, not folders
-                            if(childrenToRender[contextIndex].isFile) {
-                                visibleIndices.add(contextIndex);
-                            }
+                    for (let r = -this.CONTEXT_RADIUS; r <= this.CONTEXT_RADIUS; r++) {
+                        const targetIdx = idx + r;
+                        if (targetIdx >= 0 && targetIdx < children.length) {
+                            visibleIndices.add(targetIdx);
                         }
                     }
                 }
             });
+        } else {
+            children.forEach((_, idx) => visibleIndices.add(idx)); // Показываем всё в корне или если сжатие выключено
         }
 
-        let hiddenFilesCount = 0;
-        for (let i = 0; i < childrenToRender.length; i++) {
-            const child = childrenToRender[i];
-            const isLast = i === childrenToRender.length - 1;
+        const visibleItems = children.filter((_, idx) => visibleIndices.has(idx));
+        const hiddenItems = children.filter((_, idx) => !visibleIndices.has(idx));
+
+        // 2. Рендерим видимые элементы
+        for (let i = 0; i < visibleItems.length; i++) {
+            const child = visibleItems[i];
+            const isLast = (i === visibleItems.length - 1) && (hiddenItems.length === 0);
             const connector = isLast ? '└── ' : '├── ';
 
-            const shouldShow = !this.options.smartCompression || isRoot || child.hasSelectedContent || (child.isFile && visibleIndices.has(i));
-
-            if (shouldShow) {
-                if (hiddenFilesCount > 0) {
-                    output += `${prefix}│   ... (${hiddenFilesCount} more files hidden)\n`;
-                    hiddenFilesCount = 0;
-                }
-
-                let suffix = '';
-                if (child.isFile && !this.options.selectedPaths.has(child.path)) {
-                    suffix = ' [excluded]';
-                }
-
-                if (child.isFile) {
-                    output += `${prefix}${connector}${child.name}${suffix}\n`;
-                } else {
+            if (child.isFile) {
+                const isSelected = this.options.selectedPaths.has(child.path);
+                output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}\n`;
+            } else { // Папка
+                if (child.hasSelectedContent) {
+                    // Активная папка - рекурсивно рендерим её содержимое
                     output += `${prefix}${connector}${child.name}/\n`;
                     output += this.renderNode(child, prefix + (isLast ? '    ' : '│   '), false);
+                } else {
+                    // Неактивная папка (но видимая из-за соседства) - сворачиваем в одну строку
+                    const stats = this.countDescendants(child);
+                    const summary = stats.folders > 0 
+                        ? `(${stats.folders} folders, ${stats.files} files hidden)` 
+                        : `(${stats.files} files hidden)`;
+                    output += `${prefix}${connector}${child.name}/ ${summary}\n`;
                 }
-            } else {
-                hiddenFilesCount++;
             }
         }
-        if (hiddenFilesCount > 0) {
-            output += `${prefix}    ... (${hiddenFilesCount} more files hidden)\n`;
+        
+        // 3. Рендерим сводку по скрытым элементам
+        if (hiddenItems.length > 0) {
+            let hiddenFiles = 0, hiddenFolders = 0;
+            hiddenItems.forEach(item => {
+                const stats = this.countDescendants(item);
+                hiddenFiles += stats.files;
+                hiddenFolders += item.isFile ? 0 : (stats.folders + 1);
+            });
+            const summary = hiddenFolders > 0 
+                ? `... (${hiddenFolders} folders, ${hiddenFiles} files hidden)` 
+                : `... (${hiddenFiles} files hidden)`;
+            output += `${prefix}└── ${summary}\n`;
         }
-
+        
         return output;
     }
 }
