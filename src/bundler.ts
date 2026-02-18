@@ -99,6 +99,7 @@ export async function generateBundle(
         : (selectedPaths.size === allPaths.length ? t('modeFull') : t('modeSelected'));
 
     header += `${t('mode')}: ${modeText}\n`;
+    header += `Root: ${rootPath}\n`;
     header += `\n`;
     header += `${t('stats')}\n`;
     header += `  - ${t('filesCount')}: ${contentFiles.length} (${processedCount} text, ${skippedCount} skipped)\n`;

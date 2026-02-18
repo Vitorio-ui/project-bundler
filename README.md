@@ -48,6 +48,9 @@ Instead of dumping a 500-file tree structure, Project Bundler intelligently coll
 *   **Focus:** Shows context only around selected files.
 *   **Compression:** Collapses unrelated folders (e.g., `tests/ ... [collapsed: 42 files]`).
 *   **Token Savings:** Reduces visual noise and token count significantly.
+*   **Auto Root Detection:** The project root is automatically inferred from your selection — no need to open VS Code at the project folder. 
+    Works correctly even when opened at `/` or a high-level system path.
+*   **Context Siblings:** Shows ±2 files around each selected item so you always see what's nearby, not just the selected file in isolation.
 
 ### 📊 Token Stats (Free)
 Every bundle includes:
@@ -119,6 +122,10 @@ A: Open Command Palette (`Ctrl+Shift+P`) and run **"BUNDLER: Reset Settings & Ea
 
 **Q: Does it send my code anywhere?**
 A: No. Everything runs locally on your machine.
+
+**Q: The tree shows system folders like `usr/` or unrelated projects.**
+A: This was a known bug fixed in v0.2.2. Update the extension. If it persists, check that your workspace is not opened at `/` or another
+very high-level path — the extension will now handle this automatically, but adding heavy folders to `customExcludes` can speed up scanning.
 
 ---
 

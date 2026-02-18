@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { IgnoreEngine } from './ignoreEngine';
 import { generateBundle } from './bundler';
 import { t } from './i18n';
@@ -24,58 +25,85 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     const runBundler = async (targets: vscode.Uri[], options: BundlerOptions) => {
-        // ... (код получения rootPath и конфига) ...
+
+        // --- ИСПРАВЛЕНИЕ: вычисляем rootPath как общего предка выбранных файлов ---
         let rootPath: string | undefined;
+
         if (targets.length > 0) {
-            const workspace = vscode.workspace.getWorkspaceFolder(targets[0]);
-            rootPath = workspace?.uri.fsPath;
+            // Берём fsPath каждого target и разбиваем по sep
+            const splitPaths = targets.map(u => u.fsPath.split(path.sep));
+            // Находим общий префикс
+            let common = splitPaths[0];
+            for (const parts of splitPaths.slice(1)) {
+                const len = Math.min(common.length, parts.length);
+                let i = 0;
+                while (i < len && common[i] === parts[i]) { i++; }
+                common = common.slice(0, i);
+            }
+            const commonFsPath = common.join(path.sep);
+
+            // Если общий путь — это файл, берём его директорию
+            try {
+                const stat = await vscode.workspace.fs.stat(vscode.Uri.file(commonFsPath));
+                rootPath = stat.type === vscode.FileType.Directory
+                    ? commonFsPath
+                    : path.dirname(commonFsPath);
+            } catch {
+                rootPath = path.dirname(commonFsPath);
+            }
         } else {
             rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
         }
+
         if (!rootPath) { vscode.window.showErrorMessage(t('errorRoot')); return; }
 
         const config = vscode.workspace.getConfiguration('projectBundler');
         const maxFilesWarning = config.get('maxFiles', 10000) as number;
         const userSmartSetting = config.get('smartTree', true);
-        
+
         // --- LOGIC GATES ---
 
         let useSmartTree = false;
-        
+
         // 1. Проверяем Smart Tree (Early Access Gate)
         if (options.preset !== PresetType.Full && (options.smartTree && userSmartSetting)) {
             const allowed = await licenseManager.checkEarlyAccess("Smart Tree Compression");
-            if (!allowed) {
-                // Если отказался, продолжаем, но БЕЗ smart tree
-                useSmartTree = false; 
-            } else {
-                useSmartTree = true;
-            }
+            useSmartTree = allowed;
         }
 
         // 2. Проверяем Пресеты (Strict Gate)
         if (options.preset === PresetType.Minimal || options.preset === PresetType.Architecture) {
             const allowed = await licenseManager.checkStrictPro(`${options.preset} Preset`);
-            if (!allowed) return; // Прерываем выполнение
+            if (!allowed) { return; }
         }
 
         const ignoreEngine = new IgnoreEngine(rootPath);
         const presetEngine = new PresetEngine(ignoreEngine, rootPath);
-        
+
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Project Bundler",
             cancellable: false
         }, async (progress) => {
-            
+
             progress.report({ message: t('scan') });
-            const allFilesRaw = await vscode.workspace.findFiles('**/*', null, maxFilesWarning + 1000);
+
+            // --- ИСПРАВЛЕНИЕ: сканируем только внутри rootPath, не весь workspace ---
+            const rootPattern = new vscode.RelativePattern(rootPath!, '**/*');
+            const allFilesRaw = await vscode.workspace.findFiles(rootPattern, null);
             let treeFiles = allFilesRaw.filter(f => !ignoreEngine.isIgnored(f.fsPath));
+
+            // Предупреждение если после фильтрации всё ещё много — значит ignoreEngine не покрывает что-то тяжёлое
+            if (treeFiles.length > maxFilesWarning) {
+                vscode.window.showWarningMessage(
+                    `Project Bundler: ${treeFiles.length} files in tree after filtering. Consider adding heavy folders to customExcludes.`
+                );
+            }
 
             progress.report({ message: t('scanSelected') });
             const contentFiles = await presetEngine.getFiles(options.preset, targets);
 
-            // Merge paths logic...
+            // Merge: добавляем в дерево файлы из выборки, которых там нет
             const uniquePaths = new Set(treeFiles.map(u => u.fsPath));
             let addedNew = false;
             contentFiles.forEach(u => {
@@ -88,16 +116,12 @@ export function activate(context: vscode.ExtensionContext) {
                 treeFiles = Array.from(uniquePaths).map(p => vscode.Uri.file(p));
             }
 
-            // Soft Limits Check (из предыдущего шага)
-            // const limitsOk = await licenseManager.checkLimits(contentFiles);
-            // if (!limitsOk) return;
-
             progress.report({ message: "Packing bundle..." });
             const finalContent = await generateBundle(rootPath!, treeFiles, contentFiles, useSmartTree);
 
             const doc = await vscode.workspace.openTextDocument({ content: finalContent, language: 'markdown' });
             await vscode.window.showTextDocument(doc);
-            
+
             await vscode.env.clipboard.writeText(finalContent);
             vscode.window.showInformationMessage(t('done'));
         });

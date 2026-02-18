@@ -23,7 +23,8 @@ export class PresetEngine {
             files = await this.expandFolders(targets);
         } else {
             // Для Full, Minimal, Arch сканируем всё (с учетом ignore)
-            const allFiles = await vscode.workspace.findFiles('**/*', null);
+            const pattern = new vscode.RelativePattern(this.rootPath, '**/*');
+            const allFiles = await vscode.workspace.findFiles(pattern, null);
             files = allFiles.filter(f => !this.ignoreEngine.isIgnored(f.fsPath));
         }
 

@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.2] - 2026-02-18
+
+### Fixed
+- **Root Auto-Detection:** The extension now automatically computes the
+  correct project root as the common ancestor of all selected files and
+  folders. Previously, when VS Code was opened at a high-level directory
+  (e.g. `/`), the tree would incorrectly include unrelated system folders
+  like `usr/` alongside the actual project.
+- **[excluded] Labels:** Fixed a path separator bug that caused some
+  selected files to be incorrectly labeled `[excluded]` in the tree.
+- **Missing Files in Tree:** Removed a hard file count limit that was
+  silently cutting off `allFilePaths` in large repositories, causing
+  files in selected folders to disappear from the tree entirely.
+- **Double Folder Lines:** Fixed a rendering bug where cold (collapsed)
+  folders appeared twice — once as a name and once as a summary line.
+
+### Changed
+- **Smart Tree — Context Siblings (±2):** Files adjacent to your
+  selection are now shown in the tree, giving clearer structural context.
+- **Smart Tree — Batch Position:** Collapsed groups of hidden items now
+  appear at their correct alphabetical position within the folder, not
+  forced to the bottom of the list.
+- **Smart Tree — Batch Readability:** Groups smaller than 4 hidden items
+  are shown individually with `[excluded]` instead of being collapsed.
+  Larger groups now include up to 3 folder names in the summary line.
+- **Bundle Header:** Root path is now shown explicitly in the header
+  (`Root: /opt/ocr-service/train_dispatcher`).
+
 ## [0.2.1] - 2026-02-18
 ### Fixed
 - **Smart Tree Logic:** Completely overhauled the tree compression algorithm to fix overly aggressive and noisy output. The new context-aware logic now correctly:
