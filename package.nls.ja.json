@@ -13,7 +13,9 @@
     "config.binaryExtensions": "バイナリとして扱うファイル拡張子のリスト。",
     "config.autoSave": "バンドルを docs/bundles/フォルダーにタイムスタンプ付きで自動保存。",
     "config.includeFileDate": "各ファイルの最終更新日をバンドルに含める（トークン節約のために無効化可能）。",
-    "config.dateFormat": "更新日時スタンプの形式。使用可能：DD, MM, YYYY, HH, mm, ss。",
+    "config.dateFormat": "日付形式。使用可能：DD, MM, YYYY。",
+    "config.timeFormat": "時刻形式。使用可能：HH/hh, mm, ss。",
+    "config.timeFormat12h": "12 時間形式（AM/PM付き）を使用。",
     "command.fullProject": "BUNDLER: プロジェクト全体",
     "command.selected": "BUNDLER: 選択範囲をバンドル"
 }

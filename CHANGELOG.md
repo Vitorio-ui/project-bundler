@@ -1,12 +1,14 @@
 # Changelog
 
-## [0.2.3] - 2026-03-06
+## [0.2.4] - 2026-03-06
 
 ### Added
-- **File Modification Dates:** Each file in the bundle now includes its last modified timestamp. Helps AI understand file recency and change history.
-- **Custom Date Format:** New `projectBundler.dateFormat` setting allows customization of date format using tokens: `DD`, `MM`, `YYYY`, `HH`, `mm`, `ss`. Default: `DD.MM.YYYY HH:mm:ss` (24-hour format).
-- **Auto-Save Bundles:** New `projectBundler.autoSave` setting automatically saves bundles to `docs/bundles/` folder with timestamped filenames (`<project_name> - <YYYY-MM-DD HH-MM-SS>.txt`).
-- **Token Control:** New `projectBundler.includeFileDate` setting to disable file dates for token optimization.
+- **Separate Date/Time Format Settings:** Split date and time formatting into independent settings:
+  - `projectBundler.dateFormat`: Custom date format using tokens `DD`, `MM`, `YYYY` (Default: `DD.MM.YYYY`)
+  - `projectBundler.timeFormat`: Custom time format using tokens `HH`/`hh`, `mm`, `ss` (Default: `HH:mm:ss`)
+  - `projectBundler.timeFormat12h`: Toggle between 12-hour (with AM/PM) and 24-hour format (Default: `false` for 24-hour)
+  - Users can now configure date only, time only, both, and choose 12h or 24h format
+- **Nested .gitignore Support:** Complete refactor of IgnoreEngine to properly merge all `.gitignore` files from the entire workspace into a single comprehensive filter.
 - **Unit Tests:** 21 comprehensive tests for `TreeGenerator` covering basic rendering, Smart compression, batch threshold, context siblings (±2), Windows paths, and edge cases.
 - **Pre-publish Validation:** New `npm run validate` script runs compile, lint, tests, version check, and README↔settings sync verification.
 - **Code Coverage:** NYC integration with 97.77% line coverage on core logic.
@@ -25,6 +27,13 @@
 
 ### Known Issues
 - **TD-06:** Batch folder names display logic is unreachable. Requires refactoring of batch system to properly show collapsed folder names with "+N more" notation.
+
+## [0.2.3] - 2026-03-06
+
+### Added
+- **File Modification Dates:** Each file in the bundle now includes its last modified timestamp. Helps AI understand file recency and change history.
+- **Auto-Save Bundles:** New `projectBundler.autoSave` setting automatically saves bundles to `docs/bundles/` folder with timestamped filenames (`<project_name> - <YYYY-MM-DD HH-MM-SS>.txt`).
+- **Token Control:** New `projectBundler.includeFileDate` setting to disable file dates for token optimization.
 
 ## [0.2.2] - 2026-02-18
 

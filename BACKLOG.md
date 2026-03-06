@@ -19,14 +19,15 @@
 | Auto root detection from selection | v0.2.2 |
 | Batch position fix (alphabetical order) | v0.2.2 |
 | File Modification Dates | v0.2.3 |
-| Custom Date Format Setting | v0.2.3 |
 | Auto-Save Bundles | v0.2.3 |
-| **Tech Debt:** Pre-publish validation script (TD-04) | v0.2.3 |
-| **Tech Debt:** README ↔ settings sync check (TD-05) | v0.2.3 |
-| **Tech Debt:** Unit tests for TreeGenerator (TD-02) | v0.2.3 |
-| **Tech Debt:** Code coverage infrastructure (NYC) | v0.2.3 |
-| **Documentation:** Testing & Validation section in README | v0.2.3 |
-| **Documentation:** CHANGELOG updated with bug findings | v0.2.3 |
+| Separate Date/Time Format Settings | v0.2.4 |
+| Nested .gitignore Support | v0.2.4 |
+| **Tech Debt:** Pre-publish validation script (TD-04) | v0.2.4 |
+| **Tech Debt:** README ↔ settings sync check (TD-05) | v0.2.4 |
+| **Tech Debt:** Unit tests for TreeGenerator (TD-02) | v0.2.4 |
+| **Tech Debt:** Code coverage infrastructure (NYC) | v0.2.4 |
+| **Documentation:** Testing & Validation section in README | v0.2.4 |
+| **Documentation:** CHANGELOG updated with bug findings | v0.2.4 |
 
 ---
 

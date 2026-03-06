@@ -2,7 +2,7 @@
   "name": "project-bundler",
   "displayName": "Project Bundler (Context Builder for AI)",
   "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
@@ -143,8 +143,18 @@
         },
         "projectBundler.dateFormat": {
           "type": "string",
-          "default": "DD.MM.YYYY HH:mm:ss",
-          "description": "Date format for file modification timestamps. Use: DD, MM, YYYY, HH, mm, ss."
+          "default": "DD.MM.YYYY",
+          "description": "Date format. Use: DD, MM, YYYY. Example: DD.MM.YYYY or MM/DD/YYYY"
+        },
+        "projectBundler.timeFormat": {
+          "type": "string",
+          "default": "HH:mm:ss",
+          "description": "Time format. Use: HH/hh, mm, ss. Example: HH:mm:ss (24h) or hh:mm:ss a (12h)"
+        },
+        "projectBundler.timeFormat12h": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use 12-hour time format with AM/PM. If false, uses 24-hour format."
         }
       }
     },

@@ -13,7 +13,9 @@
     "config.binaryExtensions": "Lista de extensiones de archivo para tratar como binarios.",
     "config.autoSave": "Guardar automáticamente los bundles en la carpeta docs/bundles/ con marca de tiempo.",
     "config.includeFileDate": "Incluir la fecha de última modificación para cada archivo en el bundle (desactivar para ahorrar tokens).",
-    "config.dateFormat": "Formato de fecha para marcas de tiempo de modificación. Usar: DD, MM, YYYY, HH, mm, ss.",
+    "config.dateFormat": "Formato de fecha. Usar: DD, MM, YYYY.",
+    "config.timeFormat": "Formato de hora. Usar: HH/hh, mm, ss.",
+    "config.timeFormat12h": "Usar formato de 12 horas con AM/PM.",
     "command.fullProject": "BUNDLER: Proyecto Completo",
     "command.selected": "BUNDLER: Empaquetar Selección"
 }

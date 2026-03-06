@@ -13,7 +13,9 @@
     "config.binaryExtensions": "Liste des extensions de fichiers à traiter comme binaires.",
     "config.autoSave": "Sauvegarder automatiquement les bundles dans le dossier docs/bundles/ avec horodatage.",
     "config.includeFileDate": "Inclure la date de dernière modification pour chaque fichier dans le bundle (désactiver pour économiser les tokens).",
-    "config.dateFormat": "Format de date pour les horodatages de modification. Utiliser : DD, MM, YYYY, HH, mm, ss.",
+    "config.dateFormat": "Format de date. Utiliser : DD, MM, YYYY.",
+    "config.timeFormat": "Format d'heure. Utiliser : HH/hh, mm, ss.",
+    "config.timeFormat12h": "Utiliser le format 12 heures avec AM/PM.",
     "command.fullProject": "BUNDLER: Projet Complet",
     "command.selected": "BUNDLER: Empaqueter la sélection"
 }

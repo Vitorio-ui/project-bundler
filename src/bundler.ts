@@ -9,18 +9,43 @@ import { TokenStats } from './tokenStats';
 
 /**
  * Format date according to user settings
- * Supported tokens: DD, MM, YYYY, HH, mm, ss
+ * Supported tokens: DD, MM, YYYY, HH, hh, mm, ss, a (AM/PM)
  */
-function formatDate(date: Date, format: string): string {
+function formatDate(date: Date, dateFormat: string, timeFormat: string, use12h: boolean): string {
     const pad = (n: number) => n.toString().padStart(2, '0');
     
-    return format
+    const dateStr = dateFormat
         .replace('DD', pad(date.getDate()))
         .replace('MM', pad(date.getMonth() + 1))
-        .replace('YYYY', date.getFullYear().toString())
-        .replace('HH', pad(date.getHours()))
+        .replace('YYYY', date.getFullYear().toString());
+    
+    // Time formatting
+    let hours = date.getHours();
+    let ampm = '';
+    
+    if (use12h) {
+        ampm = hours >= 12 ? ' PM' : ' AM';
+        hours = hours % 12 || 12; // Convert 0 to 12, 13-23 to 1-11
+    }
+    
+    let timeStr = timeFormat
+        .replace('HH', pad(hours))
+        .replace('hh', pad(hours))
         .replace('mm', pad(date.getMinutes()))
         .replace('ss', pad(date.getSeconds()));
+    
+    // Add AM/PM if 12h format and 'a' token present
+    if (use12h && timeStr.includes('a')) {
+        timeStr = timeStr.replace('a', ampm.trim());
+    } else if (use12h) {
+        timeStr += ampm;
+    }
+    
+    // Combine date and time if both are provided
+    if (timeFormat.trim()) {
+        return `${dateStr} ${timeStr}`;
+    }
+    return dateStr;
 }
 
 export async function generateBundle(
@@ -35,7 +60,9 @@ export async function generateBundle(
         (config.get<string[]>('binaryExtensions', [])).map(e => e.toLowerCase())
     );
     const includeFileDate = config.get<boolean>('includeFileDate', true);
-    const dateFormat = config.get<string>('dateFormat', 'DD.MM.YYYY HH:mm:ss');
+    const dateFormat = config.get<string>('dateFormat', 'DD.MM.YYYY');
+    const timeFormat = config.get<string>('timeFormat', 'HH:mm:ss');
+    const use12h = config.get<boolean>('timeFormat12h', false);
 
     // -----------------------------
     // 1. Сортировка файлов (стабильный порядок)
@@ -60,7 +87,7 @@ export async function generateBundle(
         if (includeFileDate) {
             try {
                 const stat = await fs.stat(fileUri.fsPath);
-                lastModified = formatDate(stat.mtime, dateFormat);
+                lastModified = formatDate(stat.mtime, dateFormat, timeFormat, use12h);
             } catch (err) {
                 lastModified = undefined;
             }

@@ -13,7 +13,9 @@
     "config.binaryExtensions": "Liste der als binär zu behandelnden Dateierweiterungen.",
     "config.autoSave": "Bundles automatisch im docs/bundles/ Ordner mit Zeitstempel speichern.",
     "config.includeFileDate": "Letztes Änderungsdatum für jede Datei im Bundle einschließen (deaktivieren, um Token zu sparen).",
-    "config.dateFormat": "Datumsformat für Änderungszeitstempel. Verwenden: DD, MM, YYYY, HH, mm, ss.",
+    "config.dateFormat": "Datumsformat. Verwenden: DD, MM, YYYY.",
+    "config.timeFormat": "Zeitformat. Verwenden: HH/hh, mm, ss.",
+    "config.timeFormat12h": "12-Stunden-Zeitformat mit AM/PM verwenden.",
     "command.fullProject": "BUNDLER: Ganzes Projekt",
     "command.selected": "BUNDLER: Auswahl bündeln"
 }

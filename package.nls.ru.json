@@ -13,7 +13,9 @@
     "config.binaryExtensions": "Бинарные расширения.",
     "config.autoSave": "Автоматически сохранять бандлы в папку docs/bundles/ с временной меткой.",
     "config.includeFileDate": "Включать дату последнего изменения для каждого файла (отключите для экономии токенов).",
-    "config.dateFormat": "Формат даты для меток времени изменения файлов. Используйте: DD, MM, YYYY, HH, mm, ss.",
+    "config.dateFormat": "Формат даты. Используйте: DD, MM, YYYY.",
+    "config.timeFormat": "Формат времени. Используйте: HH/hh, mm, ss.",
+    "config.timeFormat12h": "Использовать 12-часовой формат времени с AM/PM.",
     "command.fullProject": "BUNDLER: Собрать весь проект",
     "command.selected": "BUNDLER: Собрать выбранное"
 }
