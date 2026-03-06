@@ -82,6 +82,9 @@ export function activate(context: vscode.ExtensionContext) {
         const ignoreEngine = new IgnoreEngine(rootPath);
         const presetEngine = new PresetEngine(ignoreEngine, rootPath);
 
+        // Load and merge all .gitignore rules from workspace
+        await ignoreEngine.loadAllRules();
+
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Project Bundler",

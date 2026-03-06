@@ -15,6 +15,10 @@
 - **tsconfig.json:** Added `include`/`exclude` to prevent test files from interfering with main compilation.
 
 ### Fixed
+- **.gitignore Support (v2):** Complete refactor of IgnoreEngine to properly merge all `.gitignore` files from the entire workspace. Previously, nested `.gitignore` rules were checked individually, which could miss some patterns. Now all rules are collected, normalized to workspace-root-relative paths, and merged into a single comprehensive filter that is applied uniformly to all files.
+  - Patterns with `/` (e.g., `build/`) are prefixed with their directory path
+  - Patterns without `/` (e.g., `*.log`, `__pycache__`) match at all levels (git behavior)
+  - Root `.gitignore` + all nested `.gitignore` files are scanned and merged
 - **Test Coverage Gaps:** Identified dead code in batch folder names display (lines 212-215 of `treeGenerator.ts`). The `folderNames` array is never populated because cold folders render directly in `renderChildren`. Tracked as TD-06.
 - **Windows Path Handling:** Tests adapted to handle backslash paths on Windows; noted as potential future normalization issue.
 
