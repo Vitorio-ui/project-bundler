@@ -15,3 +15,7 @@ tsconfig.json
 docs/**
 **/update-locales.js
 **/changes.diff
+.nyc_output/**
+coverage/**
+.mocharc.json
+tsconfig.test.json

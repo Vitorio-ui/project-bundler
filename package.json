@@ -6,7 +6,23 @@
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
-    "ai", "chatgpt", "gemini", "claude", "deepseek", "llm", "context", "bundle", "prompt engineering", "project structure", "code analysis", "copilot", "token optimizer", "python", "rust", "cpp", "javascript"
+    "ai",
+    "chatgpt",
+    "gemini",
+    "claude",
+    "deepseek",
+    "llm",
+    "context",
+    "bundle",
+    "prompt engineering",
+    "project structure",
+    "code analysis",
+    "copilot",
+    "token optimizer",
+    "python",
+    "rust",
+    "cpp",
+    "javascript"
   ],
   "engines": {
     "vscode": "^1.109.0"
@@ -43,7 +59,16 @@
         "projectBundler.language": {
           "type": "string",
           "default": "auto",
-          "enum": [ "auto", "en", "ru", "es", "de", "fr", "ja", "zh-cn" ],
+          "enum": [
+            "auto",
+            "en",
+            "ru",
+            "es",
+            "de",
+            "fr",
+            "ja",
+            "zh-cn"
+          ],
           "description": "%config.language%"
         },
         "projectBundler.customExcludes": {
@@ -54,14 +79,55 @@
         "projectBundler.binaryExtensions": {
           "type": "array",
           "default": [
-            ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp",
-            ".mp3", ".wav", ".mp4", ".avi", ".mov", ".mkv",
-            ".zip", ".tar", ".gz", ".7z", ".rar", ".jar", ".war",
-            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-            ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".db", ".sqlite",
-            ".pyc", ".pyd",
-            ".class", ".obj", ".o", ".a", ".lib", ".pdb", ".suo",
-            ".ncb", ".idb", ".rlib", ".exp"
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".bmp",
+            ".ico",
+            ".svg",
+            ".webp",
+            ".mp3",
+            ".wav",
+            ".mp4",
+            ".avi",
+            ".mov",
+            ".mkv",
+            ".zip",
+            ".tar",
+            ".gz",
+            ".7z",
+            ".rar",
+            ".jar",
+            ".war",
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".xls",
+            ".xlsx",
+            ".ppt",
+            ".pptx",
+            ".exe",
+            ".dll",
+            ".so",
+            ".dylib",
+            ".bin",
+            ".dat",
+            ".db",
+            ".sqlite",
+            ".pyc",
+            ".pyd",
+            ".class",
+            ".obj",
+            ".o",
+            ".a",
+            ".lib",
+            ".pdb",
+            ".suo",
+            ".ncb",
+            ".idb",
+            ".rlib",
+            ".exp"
           ],
           "description": "%config.binaryExtensions%"
         },
@@ -112,15 +178,15 @@
       },
       {
         "command": "project-bundler.resetState",
-          "title": "Bundler: Reset Settings & Early Access",
-          "icon": "$(refresh)"
+        "title": "Bundler: Reset Settings & Early Access",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "submenu": "project-bundler.ctxMenu",
-          "group": "navigation", 
+          "group": "navigation",
           "when": "explorerResourceIsFolder || resourceScheme == 'file'"
         }
       ],
@@ -152,12 +218,19 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "validate": "bash scripts/validate.sh",
+    "test": "mocha",
+    "test:coverage": "nyc --reporter=text --reporter=html npm run test"
   },
   "devDependencies": {
-    "@types/node": "22.x",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.19.15",
     "@types/vscode": "^1.109.0",
     "eslint": "^9.39.2",
+    "mocha": "^11.7.5",
+    "nyc": "^18.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {

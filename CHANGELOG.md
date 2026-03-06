@@ -6,9 +6,20 @@
 - **File Modification Dates:** Each file in the bundle now includes its last modified timestamp (e.g., `Last modified: 2026-03-06, 14:30:15`). Helps AI understand file recency and change history.
 - **Auto-Save Bundles:** New `projectBundler.autoSave` setting automatically saves bundles to `docs/bundles/` folder with timestamped filenames (`<project_name> - <YYYY-MM-DD HH-MM-SS>.txt`).
 - **Token Control:** New `projectBundler.includeFileDate` setting to disable file dates for token optimization.
+- **Unit Tests:** 21 comprehensive tests for `TreeGenerator` covering basic rendering, Smart compression, batch threshold, context siblings (±2), Windows paths, and edge cases.
+- **Pre-publish Validation:** New `npm run validate` script runs compile, lint, tests, version check, and README↔settings sync verification.
+- **Code Coverage:** NYC integration with 97.77% line coverage on core logic.
 
 ### Changed
 - **i18n:** All new features fully translated to English, Russian, Spanish, German, French, Japanese, and Chinese.
+- **tsconfig.json:** Added `include`/`exclude` to prevent test files from interfering with main compilation.
+
+### Fixed
+- **Test Coverage Gaps:** Identified dead code in batch folder names display (lines 212-215 of `treeGenerator.ts`). The `folderNames` array is never populated because cold folders render directly in `renderChildren`. Tracked as TD-06.
+- **Windows Path Handling:** Tests adapted to handle backslash paths on Windows; noted as potential future normalization issue.
+
+### Known Issues
+- **TD-06:** Batch folder names display logic is unreachable. Requires refactoring of batch system to properly show collapsed folder names with "+N more" notation.
 
 ## [0.2.2] - 2026-02-18
 

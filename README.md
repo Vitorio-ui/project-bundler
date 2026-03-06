@@ -87,6 +87,7 @@ No network requests. No data collection. Works fully offline.
 
 ## ⚙️ Settings
 
+*   `projectBundler.includeFullTree`: Always include the full project tree structure (Default: `true`).
 *   `projectBundler.smartTree`: Enable/disable automatic tree compression (Default: `true`).
 *   `projectBundler.autoSave`: Auto-save bundles to `docs/bundles/` folder with timestamp in filename (Default: `false`).
 *   `projectBundler.includeFileDate`: Include last modified date for each file in bundle. Disable to save tokens (Default: `true`).
@@ -136,6 +137,33 @@ A: No. Everything runs locally on your machine.
 **Q: The tree shows system folders like `usr/` or unrelated projects.**
 A: This was a known bug fixed in v0.2.2. Update the extension. If it persists, check that your workspace is not opened at `/` or another
 very high-level path — the extension will now handle this automatically, but adding heavy folders to `customExcludes` can speed up scanning.
+
+---
+
+## 🧪 Testing & Validation
+
+### Run Tests
+```bash
+npm run test          # Run 21 unit tests for TreeGenerator
+npm run test:coverage # Run tests with NYC coverage report
+```
+
+### Pre-publish Validation
+```bash
+npm run validate      # Full validation pipeline:
+                      # - TypeScript compile
+                      # - ESLint
+                      # - Unit tests
+                      # - Version format check
+                      # - CHANGELOG entry check
+                      # - README ↔ settings sync check
+                      # - Required files check
+```
+
+### Code Coverage
+Current coverage: **97.77%** (21 tests covering TreeGenerator core logic).
+
+HTML report available at `coverage/index.html` after running tests.
 
 ---
 
