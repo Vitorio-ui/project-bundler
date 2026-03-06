@@ -11,6 +11,8 @@
     "config.language": "扩展输出语言。",
     "config.customExcludes": "要排除的额外 glob 模式。",
     "config.binaryExtensions": "视为二进制文件的扩展名列表（跳过内容）。",
+    "config.autoSave": "自动将 bundle 保存到 docs/bundles/文件夹，带时间戳。",
+    "config.includeFileDate": "在 bundle 中包含每个文件的最后修改日期（禁用以节省 token）。",
     "command.fullProject": "BUNDLER: 完整项目",
     "command.selected": "BUNDLER: 打包选中项"
 }

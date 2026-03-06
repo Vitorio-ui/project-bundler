@@ -22,7 +22,9 @@ const translations: Translations = {
         scanSelected: 'Analyzing selection...',
         done: 'Bundle created and copied to clipboard!',
         errorRoot: 'Please open a project folder first!',
-        
+        lastModified: 'Last modified',
+        autoSaved: 'Bundle auto-saved to',
+
         // Menu
         menuPlaceholder: 'How do you want to build the context?',
         menuSelected: 'Bundle Selected Files',
@@ -50,7 +52,9 @@ const translations: Translations = {
         scanSelected: 'Анализ выбранного...',
         done: 'Бандл создан и скопирован в буфер!',
         errorRoot: 'Сначала открой папку с проектом!',
-        
+        lastModified: 'Последнее изменение',
+        autoSaved: 'Бандл сохранён в',
+
         menuPlaceholder: 'Как собрать контекст?',
         menuSelected: 'Собрать выбранное',
         menuSelectedDesc: 'Контент выбранных + Умное сжатие дерева',
@@ -77,6 +81,8 @@ const translations: Translations = {
         scanSelected: 'Analizando selección...',
         done: '¡Bundle copiado al portapapeles!',
         errorRoot: '¡Abre una carpeta de proyecto primero!',
+        lastModified: 'Última modificación',
+        autoSaved: 'Bundle guardado en',
 
         menuPlaceholder: '¿Cómo quieres construir el contexto?',
         menuSelected: 'Empaquetar Selección',
@@ -104,6 +110,8 @@ const translations: Translations = {
         scanSelected: 'Auswahl wird analysiert...',
         done: 'Bundle erstellt und in die Zwischenablage kopiert!',
         errorRoot: 'Bitte öffnen Sie zuerst einen Projektordner!',
+        lastModified: 'Zuletzt geändert',
+        autoSaved: 'Bundle gespeichert unter',
 
         menuPlaceholder: 'Wie soll der Kontext erstellt werden?',
         menuSelected: 'Auswahl bündeln',
@@ -131,6 +139,8 @@ const translations: Translations = {
         scanSelected: 'Analyse de la sélection...',
         done: 'Bundle copié dans le presse-papiers !',
         errorRoot: 'Veuillez d\'abord ouvrir un dossier projet !',
+        lastModified: 'Dernière modification',
+        autoSaved: 'Bundle enregistré sous',
 
         menuPlaceholder: 'Comment construire le contexte ?',
         menuSelected: 'Empaqueter la sélection',
@@ -158,6 +168,8 @@ const translations: Translations = {
         scanSelected: '選択範囲を分析中...',
         done: 'バンドルが作成され、クリップボードにコピーされました！',
         errorRoot: '最初にプロジェクトフォルダを開いてください！',
+        lastModified: '最終更新',
+        autoSaved: 'バンドル保存先',
 
         menuPlaceholder: 'コンテキストをどう構築しますか？',
         menuSelected: '選択範囲をバンドル',
@@ -185,6 +197,8 @@ const translations: Translations = {
         scanSelected: '正在分析选中项...',
         done: 'Bundle 已创建并复制到剪贴板！',
         errorRoot: '请先打开项目文件夹！',
+        lastModified: '最后修改',
+        autoSaved: 'Bundle 已保存至',
 
         menuPlaceholder: '如何构建上下文？',
         menuSelected: '打包选中项',

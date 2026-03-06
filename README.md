@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="icon.png" width="128" height="128" alt="Context Builder Logo">
-  
+
   <p><strong>One-click project context for Gemini, ChatGPT, Claude, DeepSeek amd LLMs.</strong></p>
 
 </div>
@@ -31,7 +31,9 @@ Working with AI on real projects is painful:
 It generates:
 - a readable ASCII tree of your project
 - full contents of selected files
+- file modification dates (optional)
 - a clear separation between structure and code
+- auto-saved bundles with timestamps (optional)
 
 Perfect for:
 - architecture discussions
@@ -86,6 +88,8 @@ No network requests. No data collection. Works fully offline.
 ## ⚙️ Settings
 
 *   `projectBundler.smartTree`: Enable/disable automatic tree compression (Default: `true`).
+*   `projectBundler.autoSave`: Auto-save bundles to `docs/bundles/` folder with timestamp in filename (Default: `false`).
+*   `projectBundler.includeFileDate`: Include last modified date for each file in bundle. Disable to save tokens (Default: `true`).
 *   `projectBundler.maxFiles`: Warning limit to prevent freezing on massive repos.
 *   `projectBundler.binaryExtensions`: List of file extensions to skip content from.
 *   `projectBundler.customExcludes`: Add your own glob patterns to the ignore list.
@@ -102,12 +106,18 @@ We believe in a usable Free tier, not a crippled demo.
 | Feature | Free (Early Access) | Pro (v1.0 Goal) |
 | :--- | :---: | :---: |
 | **Context Builder** (Manual selection) | ✅ | ✅ |
-| **Full Project Tree** | ✅ | ✅ |
+| **Code Context** | ✅ | ✅ |
+| **File Tree Context** | ✅ | ✅ |
 | **Token Stats** | ✅ | ✅ |
 | **Ignore Engine** (.gitignore + auto rules) | ✅ | ✅ |
+| **File Modification Dates** | ✅ | ✅ |
+| **Auto-Save Bundles** | ✅ | ✅ |
 | **Custom Excludes** (manual ignore rules) | ❌ | ✅ |
 | **Smart Tree Compression** | ✅ (Opt-in) | ✅ |
 | **Context Presets** (Minimal, Arch, Debug) | ❌ | ✅ |
+| **Database Schema Context** | ❌ | ✅ |
+| **API Context** | ❌ | ✅ |
+| **Infra Context** | ❌ | ✅ |
 | **File Ordering Engine** | ❌ | ✅ |
 | **Priority Support** | ❌ | ✅ |
 

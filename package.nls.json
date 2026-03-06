@@ -11,6 +11,8 @@
     "config.language": "Extension output language.",
     "config.customExcludes": "Additional glob patterns to exclude.",
     "config.binaryExtensions": "List of file extensions to treat as binary.",
+    "config.autoSave": "Auto-save bundles to docs/bundles/ folder with timestamp.",
+    "config.includeFileDate": "Include last modified date for each file in bundle (disable to save tokens).",
     "command.fullProject": "BUNDLER: Full Project",
     "command.selected": "BUNDLER: Bundle Selected"
 }

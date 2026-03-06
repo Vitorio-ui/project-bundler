@@ -18,6 +18,7 @@ export async function generateBundle(
     const binaryExtensions = new Set(
         (config.get<string[]>('binaryExtensions', [])).map(e => e.toLowerCase())
     );
+    const includeFileDate = config.get<boolean>('includeFileDate', true);
 
     // -----------------------------
     // 1. Сортировка файлов (стабильный порядок)
@@ -37,7 +38,21 @@ export async function generateBundle(
         const relativePath = path.relative(rootPath, fileUri.fsPath);
         const ext = path.extname(fileUri.fsPath).toLowerCase();
 
+        // Get file modification date (if enabled)
+        let lastModified: string | undefined;
+        if (includeFileDate) {
+            try {
+                const stat = await fs.stat(fileUri.fsPath);
+                lastModified = stat.mtime.toLocaleString();
+            } catch (err) {
+                lastModified = undefined;
+            }
+        }
+
         contentSection += `--- FILE: ${relativePath} ---\n`;
+        if (lastModified) {
+            contentSection += `${t('lastModified')}: ${lastModified}\n`;
+        }
 
         if (binaryExtensions.has(ext)) {
             contentSection += `[Binary or excluded extension: ${ext}]\n`;

@@ -11,6 +11,8 @@
     "config.language": "拡張機能の出力言語。",
     "config.customExcludes": "除外する追加のグロブパターン。",
     "config.binaryExtensions": "バイナリとして扱うファイル拡張子のリスト。",
+    "config.autoSave": "バンドルを docs/bundles/フォルダーにタイムスタンプ付きで自動保存。",
+    "config.includeFileDate": "各ファイルの最終更新日をバンドルに含める（トークン節約のために無効化可能）。",
     "command.fullProject": "BUNDLER: プロジェクト全体",
     "command.selected": "BUNDLER: 選択範囲をバンドル"
 }

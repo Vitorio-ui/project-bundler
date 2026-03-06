@@ -11,6 +11,8 @@
     "config.language": "Ausgabesprache der Erweiterung.",
     "config.customExcludes": "Zusätzliche Glob-Muster zum Ausschluss.",
     "config.binaryExtensions": "Liste der als binär zu behandelnden Dateierweiterungen.",
+    "config.autoSave": "Bundles automatisch im docs/bundles/ Ordner mit Zeitstempel speichern.",
+    "config.includeFileDate": "Letztes Änderungsdatum für jede Datei im Bundle einschließen (deaktivieren, um Token zu sparen).",
     "command.fullProject": "BUNDLER: Ganzes Projekt",
     "command.selected": "BUNDLER: Auswahl bündeln"
 }

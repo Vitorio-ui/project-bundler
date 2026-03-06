@@ -2,7 +2,7 @@
   "name": "project-bundler",
   "displayName": "Project Bundler (Context Builder for AI)",
   "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
@@ -64,6 +64,16 @@
             ".ncb", ".idb", ".rlib", ".exp"
           ],
           "description": "%config.binaryExtensions%"
+        },
+        "projectBundler.autoSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-save bundles to docs/bundles/ folder with timestamp."
+        },
+        "projectBundler.includeFileDate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include last modified date for each file in bundle (disable to save tokens)."
         }
       }
     },

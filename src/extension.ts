@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import { IgnoreEngine } from './ignoreEngine';
 import { generateBundle } from './bundler';
 import { t } from './i18n';
@@ -60,6 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
         const config = vscode.workspace.getConfiguration('projectBundler');
         const maxFilesWarning = config.get('maxFiles', 10000) as number;
         const userSmartSetting = config.get('smartTree', true);
+        const autoSave = config.get('autoSave', false) as boolean;
 
         // --- LOGIC GATES ---
 
@@ -124,6 +126,24 @@ export function activate(context: vscode.ExtensionContext) {
 
             await vscode.env.clipboard.writeText(finalContent);
             vscode.window.showInformationMessage(t('done'));
+
+            // Auto-save functionality
+            if (autoSave) {
+                try {
+                    const bundlesDir = path.join(rootPath!, 'docs', 'bundles');
+                    await fs.mkdir(bundlesDir, { recursive: true });
+                    
+                    const folderName = path.basename(rootPath!);
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace(/T/, ' ').slice(0, -5);
+                    const fileName = `${folderName} - ${timestamp}.txt`;
+                    const filePath = path.join(bundlesDir, fileName);
+                    
+                    await fs.writeFile(filePath, finalContent, 'utf8');
+                    vscode.window.showInformationMessage(`${t('autoSaved')}: ${filePath}`);
+                } catch (err) {
+                    vscode.window.showWarningMessage(`Auto-save failed: ${String(err)}`);
+                }
+            }
         });
     };
 

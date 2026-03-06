@@ -11,6 +11,8 @@
     "config.language": "Язык вывода.",
     "config.customExcludes": "Исключения файлов.",
     "config.binaryExtensions": "Бинарные расширения.",
+    "config.autoSave": "Автоматически сохранять бандлы в папку docs/bundles/ с временной меткой.",
+    "config.includeFileDate": "Включать дату последнего изменения для каждого файла (отключите для экономии токенов).",
     "command.fullProject": "BUNDLER: Собрать весь проект",
     "command.selected": "BUNDLER: Собрать выбранное"
 }
