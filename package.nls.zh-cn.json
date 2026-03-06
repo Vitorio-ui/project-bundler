@@ -13,6 +13,7 @@
     "config.binaryExtensions": "视为二进制文件的扩展名列表（跳过内容）。",
     "config.autoSave": "自动将 bundle 保存到 docs/bundles/文件夹，带时间戳。",
     "config.includeFileDate": "在 bundle 中包含每个文件的最后修改日期（禁用以节省 token）。",
+    "config.dateFormat": "文件修改时间戳的日期格式。使用：DD, MM, YYYY, HH, mm, ss。",
     "command.fullProject": "BUNDLER: 完整项目",
     "command.selected": "BUNDLER: 打包选中项"
 }

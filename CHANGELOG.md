@@ -3,7 +3,8 @@
 ## [0.2.3] - 2026-03-06
 
 ### Added
-- **File Modification Dates:** Each file in the bundle now includes its last modified timestamp (e.g., `Last modified: 2026-03-06, 14:30:15`). Helps AI understand file recency and change history.
+- **File Modification Dates:** Each file in the bundle now includes its last modified timestamp. Helps AI understand file recency and change history.
+- **Custom Date Format:** New `projectBundler.dateFormat` setting allows customization of date format using tokens: `DD`, `MM`, `YYYY`, `HH`, `mm`, `ss`. Default: `DD.MM.YYYY HH:mm:ss` (24-hour format).
 - **Auto-Save Bundles:** New `projectBundler.autoSave` setting automatically saves bundles to `docs/bundles/` folder with timestamped filenames (`<project_name> - <YYYY-MM-DD HH-MM-SS>.txt`).
 - **Token Control:** New `projectBundler.includeFileDate` setting to disable file dates for token optimization.
 - **Unit Tests:** 21 comprehensive tests for `TreeGenerator` covering basic rendering, Smart compression, batch threshold, context siblings (±2), Windows paths, and edge cases.

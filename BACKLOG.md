@@ -19,6 +19,7 @@
 | Auto root detection from selection | v0.2.2 |
 | Batch position fix (alphabetical order) | v0.2.2 |
 | File Modification Dates | v0.2.3 |
+| Custom Date Format Setting | v0.2.3 |
 | Auto-Save Bundles | v0.2.3 |
 | **Tech Debt:** Pre-publish validation script (TD-04) | v0.2.3 |
 | **Tech Debt:** README ↔ settings sync check (TD-05) | v0.2.3 |

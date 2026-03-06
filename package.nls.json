@@ -13,6 +13,7 @@
     "config.binaryExtensions": "List of file extensions to treat as binary.",
     "config.autoSave": "Auto-save bundles to docs/bundles/ folder with timestamp.",
     "config.includeFileDate": "Include last modified date for each file in bundle (disable to save tokens).",
+    "config.dateFormat": "Date format for file modification timestamps. Use: DD, MM, YYYY, HH, mm, ss.",
     "command.fullProject": "BUNDLER: Full Project",
     "command.selected": "BUNDLER: Bundle Selected"
 }

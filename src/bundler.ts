@@ -7,6 +7,22 @@ import { t } from './i18n';
 import { TreeGenerator } from './treeGenerator';
 import { TokenStats } from './tokenStats';
 
+/**
+ * Format date according to user settings
+ * Supported tokens: DD, MM, YYYY, HH, mm, ss
+ */
+function formatDate(date: Date, format: string): string {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    
+    return format
+        .replace('DD', pad(date.getDate()))
+        .replace('MM', pad(date.getMonth() + 1))
+        .replace('YYYY', date.getFullYear().toString())
+        .replace('HH', pad(date.getHours()))
+        .replace('mm', pad(date.getMinutes()))
+        .replace('ss', pad(date.getSeconds()));
+}
+
 export async function generateBundle(
     rootPath: string,
     allFiles: vscode.Uri[],
@@ -19,6 +35,7 @@ export async function generateBundle(
         (config.get<string[]>('binaryExtensions', [])).map(e => e.toLowerCase())
     );
     const includeFileDate = config.get<boolean>('includeFileDate', true);
+    const dateFormat = config.get<string>('dateFormat', 'DD.MM.YYYY HH:mm:ss');
 
     // -----------------------------
     // 1. Сортировка файлов (стабильный порядок)
@@ -43,7 +60,7 @@ export async function generateBundle(
         if (includeFileDate) {
             try {
                 const stat = await fs.stat(fileUri.fsPath);
-                lastModified = stat.mtime.toLocaleString();
+                lastModified = formatDate(stat.mtime, dateFormat);
             } catch (err) {
                 lastModified = undefined;
             }

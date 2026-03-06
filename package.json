@@ -140,6 +140,11 @@
           "type": "boolean",
           "default": true,
           "description": "Include last modified date for each file in bundle (disable to save tokens)."
+        },
+        "projectBundler.dateFormat": {
+          "type": "string",
+          "default": "DD.MM.YYYY HH:mm:ss",
+          "description": "Date format for file modification timestamps. Use: DD, MM, YYYY, HH, mm, ss."
         }
       }
     },

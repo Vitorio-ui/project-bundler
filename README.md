@@ -91,6 +91,7 @@ No network requests. No data collection. Works fully offline.
 *   `projectBundler.smartTree`: Enable/disable automatic tree compression (Default: `true`).
 *   `projectBundler.autoSave`: Auto-save bundles to `docs/bundles/` folder with timestamp in filename (Default: `false`).
 *   `projectBundler.includeFileDate`: Include last modified date for each file in bundle. Disable to save tokens (Default: `true`).
+*   `projectBundler.dateFormat`: Date format for file modification timestamps. Use tokens: `DD`, `MM`, `YYYY`, `HH`, `mm`, `ss` (Default: `DD.MM.YYYY HH:mm:ss`).
 *   `projectBundler.maxFiles`: Warning limit to prevent freezing on massive repos.
 *   `projectBundler.binaryExtensions`: List of file extensions to skip content from.
 *   `projectBundler.customExcludes`: Add your own glob patterns to the ignore list.
