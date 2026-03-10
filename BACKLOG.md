@@ -28,6 +28,16 @@
 | **Tech Debt:** Code coverage infrastructure (NYC) | v0.2.4 |
 | **Documentation:** Testing & Validation section in README | v0.2.4 |
 | **Documentation:** CHANGELOG updated with bug findings | v0.2.4 |
+| **Tech Debt:** Fix dead code: batch folder names display (TD-06) | v0.2.5 |
+| **Feature:** Three-Tier Exclusion System (excludeFolders, userExcludes, binaryExtensions) | v0.2.5 |
+| **Feature:** Fast Folder Exclusion (isFolderExcluded before scanning) | v0.2.5 |
+| **Feature:** Tree visualization for excluded folders and binary files | v0.2.5 |
+| **Bug Fix:** Gitignore pattern scoping bugs #1 and #2 | v0.2.5 |
+| **Bug Fix:** Pass exclude patterns to findFiles() for true pre-scan exclusion | v0.2.5 |
+| **Bug Fix:** Race condition in isIgnored() - now properly awaits loadAllRules() | v0.2.5 |
+| **Bug Fix:** Remove docs/bundles from excludeFolders (basename vs path issue) | v0.2.5 |
+| **Bug Fix:** Remove duplicate excludeBinaries setting (merged into binaryExtensions) | v0.2.5 |
+| **Bug Fix:** Auto-save permission denied when no workspace (EACCES: mkdir '/docs') | v0.2.5 |
 
 ---
 
@@ -38,11 +48,11 @@ These block confidence in future changes.
 | ID | Item | Notes | Status |
 |---|---|---|---|
 | TD-01 | Snapshot tests for `bundler.ts` output | Deferred: bundler tests require complex VSCode API mocks. TreeGenerator tests cover core logic. | ⚠️ Deferred |
-| TD-02 | Unit tests for `TreeGenerator` | 21 test covering: basic rendering, Smart compression, batch threshold, Windows paths, context siblings | ✅ Done v0.2.3 |
+| TD-02 | Unit tests for `TreeGenerator` | 24 tests covering: basic rendering, Smart compression, batch threshold, Windows paths, context siblings, excluded folders, binary files | ✅ Done v0.2.5 |
 | TD-03 | Integration test for `runBundler` pipeline | Use `@vscode/test-electron`; at minimum test Full and Selected presets | 📋 Backlog |
 | TD-04 | Pre-publish validation script | Script at `scripts/validate.sh`, runs compile + lint + tests + version check | ✅ Done v0.2.3 |
 | TD-05 | README ↔ settings sync checklist | Automated as `scripts/check-settings-sync.js`, runs in validate step | ✅ Done v0.2.3 |
-| TD-06 | Fix dead code: batch folder names display (lines 212-215) | `folderNames` never populated — cold folders render directly in `renderChildren`. Requires refactoring batch logic. | 🆕 New |
+| TD-06 | Fix dead code: batch folder names display (lines 212-215) | `folderNames` never populated — cold folders render directly in `renderChildren`. Requires refactoring batch logic. | ✅ Done v0.2.5 |
 
 ---
 
@@ -53,6 +63,8 @@ These block confidence in future changes.
 | F-01 | `BUNDLER.ignore` file support | P2 | Project-level ignore rules separate from `.gitignore` |
 | F-02 | Token-aware soft warning thresholds | P2 | Warn at 32k / 64k / 128k tokens |
 | F-03 | Setting to suppress editor tab on bundle | P3 | Some users want clipboard-only output |
+| F-04 | Token count per file/folder in tree | P1 | Show ~Xk tokens next to each node in tree and in file headers. Two-pass: collect tokens during content read, aggregate up tree. 
+Free: display only. Pro (P-04): auto-exclude over budget. Target: v0.2.6 |
 
 ---
 
@@ -75,7 +87,7 @@ These block confidence in future changes.
 | P-01 | Pro license key (offline validation) | P0 | Required to ship Pro |
 | P-02 | Context Profiles (per workspace config) | P0 | Saved preset + exclude combos |
 | P-03 | Diff Mode | P0 | Bundle only files changed since last git commit |
-| P-04 | Token Budget Targeting | P1 | "Fit in 8k / 32k / 128k" — auto-trim strategy |
+| P-04 | Token Budget Targeting — depends on F-04 (token counts in tree) | P1 | "Fit in 8k / 32k / 128k" — auto-trim strategy |
 | P-05 | Database Schema Context | P1 | Parse SQL migrations / ORM models |
 | P-06 | API Context | P1 | Extract REST/GraphQL route definitions |
 | P-07 | Auto-summary for collapsed folders | P1 | One-line AI-generated description of hidden content |

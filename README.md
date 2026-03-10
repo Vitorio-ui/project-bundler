@@ -95,11 +95,16 @@ No network requests. No data collection. Works fully offline.
 *   `projectBundler.timeFormat`: Time format using tokens `HH`/`hh`, `mm`, `ss` (Default: `HH:mm:ss`).
 *   `projectBundler.timeFormat12h`: Use 12-hour format with AM/PM. If `false`, uses 24-hour format (Default: `false`).
 *   `projectBundler.maxFiles`: Warning limit to prevent freezing on massive repos.
-*   `projectBundler.binaryExtensions`: List of file extensions to skip content from.
-*   `projectBundler.customExcludes`: Add your own glob patterns to the ignore list.
 *   `projectBundler.language`:
   * `auto` (default) — matches VS Code UI language
   * `en`, `ru`, `es`, `de`, `fr`, `ja`, `zh-cn` — forces bundle output language
+
+### Exclusion Settings (v0.2.5)
+
+*   `projectBundler.excludeFolders`: Folder name patterns to exclude from bundling. Supports glob suffixes/prefixes (e.g. `*_venv`, `.cache`). Matched folders are never scanned. Default includes: `.git`, `node_modules`, `venv`, `__pycache__`, `dist`, `build`, etc.
+*   `projectBundler.binaryExtensions`: File extensions to treat as binary. These files appear in the tree but their content is never read. Default includes: `.png`, `.jpg`, `.pdf`, `.exe`, `.dll`, `.pyc`, `.pth`, `.onnx`, etc.
+*   `projectBundler.userExcludes`: Additional glob patterns to exclude. Applied on top of folder and binary excludes. `.gitignore` files are merged automatically.
+*   `projectBundler.customExcludes`: **Deprecated** (v0.2.5). Use `projectBundler.userExcludes` instead. Kept for backward compatibility.
 
 ---
 
@@ -147,7 +152,7 @@ very high-level path — the extension will now handle this automatically, but a
 
 ### Run Tests
 ```bash
-npm run test          # Run 21 unit tests for TreeGenerator
+npm run test          # Run 24 unit tests for TreeGenerator
 npm run test:coverage # Run tests with NYC coverage report
 ```
 
@@ -164,7 +169,7 @@ npm run validate      # Full validation pipeline:
 ```
 
 ### Code Coverage
-Current coverage: **97.77%** (21 tests covering TreeGenerator core logic).
+Current coverage: **97.77%** (24 tests covering TreeGenerator core logic).
 
 HTML report available at `coverage/index.html` after running tests.
 

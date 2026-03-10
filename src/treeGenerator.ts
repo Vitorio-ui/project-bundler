@@ -8,12 +8,16 @@ interface TreeNode {
     hasSelectedContent: boolean;
     isSelected: boolean;     // NEW: узел сам является выбранным
     isContextNode: boolean;  // NEW: попадает в радиус ±2 от выбранного
+    isExcludedFolder: boolean;  // NEW: папка исключена из сканирования
+    isBinary: boolean;          // NEW: файл бинарный (в дереве, не в контенте)
 }
 
 export interface TreeOptions {
     rootPath: string;
     allFilePaths: string[];
     selectedPaths: Set<string>;
+    excludedFolderPaths?: Set<string>;  // optional with default
+    binaryFilePaths?: Set<string>;      // optional with default
     smartCompression: boolean;
 }
 
@@ -21,14 +25,32 @@ export class TreeGenerator {
     private root: TreeNode;
 
     private normalizedSelected: Set<string>;
+    private normalizedExcludedFolders: Set<string>;
+    private normalizedBinaryFiles: Set<string>;
 
     constructor(private options: TreeOptions) {
-        this.root = { name: path.basename(options.rootPath), path: '', isFile: false,
-            children: [], hasSelectedContent: false, isSelected: false, isContextNode: false };
-        // Нормализуем selectedPaths к '/' один раз, чтобы не было проблем
-        // с path.sep на разных ОС и при edge-case'ах в именах файлов
+        this.root = { 
+            name: path.basename(options.rootPath), 
+            path: '', 
+            isFile: false, 
+            children: [], 
+            hasSelectedContent: false, 
+            isSelected: false, 
+            isContextNode: false,
+            isExcludedFolder: false,
+            isBinary: false
+        };
+        // Нормализуем selectedPaths к '/' для консистентности
         this.normalizedSelected = new Set(
             [...options.selectedPaths].map(p => p.split(path.sep).join('/'))
+        );
+        // Нормализуем excludedFolderPaths (default = empty Set)
+        this.normalizedExcludedFolders = new Set(
+            [...(options.excludedFolderPaths || new Set())].map(p => p.split(path.sep).join('/'))
+        );
+        // Нормализуем binaryFilePaths (default = empty Set)
+        this.normalizedBinaryFiles = new Set(
+            [...(options.binaryFilePaths || new Set())].map(p => p.split(path.sep).join('/'))
         );
         this.buildTree();
     }
@@ -46,9 +68,22 @@ export class TreeGenerator {
                 const currentPath = parts.slice(0, i + 1).join('/');
                 let currentNode = nodeMap.get(currentPath);
                 if (!currentNode) {
-                    const isFile = i === parts.length - 1;
-                    currentNode = { name: parts[i], path: currentPath, isFile, children: [],
-                        hasSelectedContent: false, isSelected: false, isContextNode: false };
+                    const isLastPart = i === parts.length - 1;
+                    // Excluded folder at any level should be treated as folder, not file
+                    const isExcludedFolder = this.normalizedExcludedFolders.has(currentPath);
+                    const isFile = isLastPart && !isExcludedFolder;
+                    const isBinary = isFile && this.normalizedBinaryFiles.has(currentPath);
+                    currentNode = {
+                        name: parts[i],
+                        path: currentPath,
+                        isFile,
+                        children: [],
+                        hasSelectedContent: false,
+                        isSelected: false,
+                        isContextNode: false,
+                        isExcludedFolder,
+                        isBinary
+                    };
                     parentNode.children.push(currentNode);
                     nodeMap.set(currentPath, currentNode);
                 }
@@ -146,18 +181,17 @@ export class TreeGenerator {
             : `(${files} files hidden)`;
     }
 
-    private static readonly BATCH_THRESHOLD = 4; // Fix 2: было 2
+    private static readonly BATCH_THRESHOLD = 4;
 
     private renderNode(node: TreeNode, prefix: string, isRoot: boolean): string {
-        // collapsed-логика теперь живёт только в renderChildren и в visible-блоке ниже
         const children = this.sortedChildren(node);
-        if (!this.options.smartCompression || isRoot) {
+        if (!this.options.smartCompression) {
             return this.renderChildren(children, prefix);
         }
 
-        // Строим список RenderItem-ов в алфавитном порядке.
-        // Последовательные холодные узлы накапливаются в батч и флашатся
-        // как только встречается горячий узел — так батч стоит на своём месте.
+        // For root nodes, also use batching to show collapsed summary for cold folders
+        // Build list of RenderItems in alphabetical order.
+        // Consecutive cold nodes are batched and flushed when a hot node is encountered.
         type RenderItem =
             | { kind: 'node'; node: TreeNode }
             | { kind: 'batch'; folders: number; files: number; folderNames: string[] };
@@ -172,8 +206,12 @@ export class TreeGenerator {
                 // Мало скрытых — показываем поштучно с [excluded]
                 for (const n of batchNodes) renderItems.push({ kind: 'node', node: n });
             } else {
-                renderItems.push({ kind: 'batch', folders: batchFolders, files: batchFiles,
-                    folderNames: batchFolderNames });
+                renderItems.push({ 
+                    kind: 'batch', 
+                    folders: batchFolders, 
+                    files: batchFiles,
+                    folderNames: batchFolderNames 
+                });
             }
             batchFolders = 0; batchFiles = 0; batchFolderNames = []; batchNodes = [];
         };
@@ -219,12 +257,22 @@ export class TreeGenerator {
             } else {
                 const child = item.node;
                 if (child.isFile) {
-                    const isSelected = this.normalizedSelected.has(child.path);
-                    output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}\n`;
+                    // Binary file — show with [binary] label
+                    if (child.isBinary) {
+                        output += `${prefix}${connector}${child.name} [binary]\n`;
+                    } else {
+                        const isSelected = this.normalizedSelected.has(child.path);
+                        output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}\n`;
+                    }
+                } else if (child.isExcludedFolder) {
+                    // Excluded folder — show with [excluded] label, don't recurse
+                    output += `${prefix}${connector}${child.name}/ [excluded]\n`;
                 } else if (!child.hasSelectedContent) {
+                    // Cold folder — collapse with summary
                     const s = this.countDescendants(child);
                     output += `${prefix}${connector}${child.name}/ ${this.makeFolderSummary(s.folders, s.files)}\n`;
                 } else {
+                    // Hot folder — recurse
                     output += `${prefix}${connector}${child.name}/\n`;
                     output += this.renderNode(child, childPrefix, false);
                 }
@@ -240,6 +288,18 @@ export class TreeGenerator {
             const isLast = i === children.length - 1;
             const connector = isLast ? '└── ' : '├── ';
             const childPrefix = prefix + (isLast ? '    ' : '│   ');
+
+            // Исключённая папка — показать в дереве, но не заходить внутрь
+            if (!child.isFile && child.isExcludedFolder) {
+                output += `${prefix}${connector}${child.name}/ [excluded]\n`;
+                continue; // не рекурсируем внутрь
+            }
+
+            // Бинарный файл — показать в дереве с меткой
+            if (child.isFile && child.isBinary) {
+                output += `${prefix}${connector}${child.name} [binary]\n`;
+                continue;
+            }
 
             if (child.isFile) {
                 const isSelected = this.normalizedSelected.has(child.path);

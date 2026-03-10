@@ -93,23 +93,97 @@ export function activate(context: vscode.ExtensionContext) {
 
             progress.report({ message: t('scan') });
 
-            // --- ИСПРАВЛЕНИЕ: сканируем только внутри rootPath, не весь workspace ---
-            const rootPattern = new vscode.RelativePattern(rootPath!, '**/*');
-            const allFilesRaw = await vscode.workspace.findFiles(rootPattern, null);
-            let treeFiles = allFilesRaw.filter(f => !ignoreEngine.isIgnored(f.fsPath));
+            // --- FIX #3: Scan only selected folders, not entire common ancestor ---
+            // When rootPath = '/opt' (common ancestor of 9 projects), scanning '**/*'
+            // contaminates tree with unrelatconst files = await vscodeed files. Instead, scan each target folder.
+            let treeFiles: vscode.Uri[] = [];
+
+            if (targets.length > 0) {
+                // Scan each selected folder individually
+                const scannedPaths = new Set<string>();
+
+                // Build exclude pattern for findFiles from excludeFolders setting
+                const config = vscode.workspace.getConfiguration('projectBundler');
+                const excludeFolders = config.get<string[]>('excludeFolders', []);
+                const excludePattern = excludeFolders.length > 0
+                    ? `{${excludeFolders.map(p => `**/${p}/**`).join(',')}}`
+                    : undefined;
+
+                for (const target of targets) {
+                    const stat = await vscode.workspace.fs.stat(target);
+                    if (stat.type === vscode.FileType.Directory) {
+                        const folderName = path.basename(target.fsPath);
+                        
+                        // Check if this top-level folder is excluded
+                        if (ignoreEngine.isFolderExcluded(folderName, target.fsPath)) {
+                            continue; // не сканируем
+                        }
+
+                        const pattern = new vscode.RelativePattern(target, '**/*');
+                        // Pass exclude pattern - VS Code won't enter excluded folders
+                        const files = await vscode.workspace.findFiles(pattern, excludePattern);
+                        for (const f of files) {
+                            if (!scannedPaths.has(f.fsPath)) {
+                                scannedPaths.add(f.fsPath);
+                                if (!await ignoreEngine.isIgnored(f.fsPath)) {
+                                    treeFiles.push(f);
+                                }
+                            }
+                        }
+                    } else {
+                        // Single file - just check if ignored
+                        if (!await ignoreEngine.isIgnored(target.fsPath)) {
+                            treeFiles.push(target);
+                        }
+                    }
+                }
+            } else {
+                // No targets (e.g., Full preset) - scan from rootPath as before
+                const config = vscode.workspace.getConfiguration('projectBundler');
+                const excludeFolders = config.get<string[]>('excludeFolders', []);
+                const excludePattern = excludeFolders.length > 0
+                    ? `{${excludeFolders.map(p => `**/${p}/**`).join(',')}}`
+                    : undefined;
+
+                const rootPattern = new vscode.RelativePattern(rootPath!, '**/*');
+                const allFilesRaw = await vscode.workspace.findFiles(rootPattern, excludePattern);
+                
+                // Filter with await
+                for (const f of allFilesRaw) {
+                    if (!await ignoreEngine.isIgnored(f.fsPath)) {
+                        treeFiles.push(f);
+                    }
+                }
+            }
 
             // Предупреждение если после фильтрации всё ещё много — значит ignoreEngine не покрывает что-то тяжёлое
             if (treeFiles.length > maxFilesWarning) {
-                vscode.window.showWarningMessage(
-                    `Project Bundler: ${treeFiles.length} files in tree after filtering. Consider adding heavy folders to customExcludes.`
+                const answer = await vscode.window.showWarningMessage(
+                    `Project Bundler: ${treeFiles.length} files found after filtering (limit: ${maxFilesWarning}). ` +
+                    `Add heavy folders to customExcludes and retry.`,
+                    'Cancel', 'Continue anyway'
                 );
+                if (answer !== 'Continue anyway') { return; }
             }
 
             progress.report({ message: t('scanSelected') });
             const contentFiles = await presetEngine.getFiles(options.preset, targets);
 
-            // Merge: добавляем в дерево файлы из выборки, которых там нет
+            // Collect excluded folder paths and binary file paths for tree rendering
+            const excludedFolderPaths = await presetEngine.getExcludedFolderPaths(targets);
+            const binaryFilePaths = await presetEngine.getBinaryFilePaths(treeFiles);
+
+            // Add excluded folder paths to treeFiles so they render in the tree
             const uniquePaths = new Set(treeFiles.map(u => u.fsPath));
+            for (const excludedPath of excludedFolderPaths) {
+                const fullPath = path.join(rootPath!, excludedPath);
+                if (!uniquePaths.has(fullPath)) {
+                    uniquePaths.add(fullPath);
+                    treeFiles.push(vscode.Uri.file(fullPath));
+                }
+            }
+
+            // Merge: добавляем в дерево файлы из выборки, которых там нет
             let addedNew = false;
             contentFiles.forEach(u => {
                 if (!uniquePaths.has(u.fsPath)) {
@@ -122,7 +196,16 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             progress.report({ message: "Packing bundle..." });
-            const finalContent = await generateBundle(rootPath!, treeFiles, contentFiles, useSmartTree);
+
+            if (contentFiles.length > maxFilesWarning) {
+                const answer = await vscode.window.showWarningMessage(
+                    `Project Bundler: ${contentFiles.length} files selected for bundle content. This may produce a very large bundle.`,
+                    'Cancel', 'Continue anyway'
+                );
+                if (answer !== 'Continue anyway') { return; }
+            }
+
+            const finalContent = await generateBundle(rootPath!, treeFiles, contentFiles, useSmartTree, excludedFolderPaths, binaryFilePaths);
 
             const doc = await vscode.workspace.openTextDocument({ content: finalContent, language: 'markdown' });
             await vscode.window.showTextDocument(doc);
@@ -133,14 +216,16 @@ export function activate(context: vscode.ExtensionContext) {
             // Auto-save functionality
             if (autoSave) {
                 try {
+                    // Use rootPath (common ancestor of selected files) for auto-save
+                    // This ensures docs/bundles is created relative to the project, not workspace
                     const bundlesDir = path.join(rootPath!, 'docs', 'bundles');
                     await fs.mkdir(bundlesDir, { recursive: true });
-                    
+
                     const folderName = path.basename(rootPath!);
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace(/T/, ' ').slice(0, -5);
                     const fileName = `${folderName} - ${timestamp}.txt`;
                     const filePath = path.join(bundlesDir, fileName);
-                    
+
                     await fs.writeFile(filePath, finalContent, 'utf8');
                     vscode.window.showInformationMessage(`${t('autoSaved')}: ${filePath}`);
                 } catch (err) {

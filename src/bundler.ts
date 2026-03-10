@@ -52,7 +52,9 @@ export async function generateBundle(
     rootPath: string,
     allFiles: vscode.Uri[],
     contentFiles: vscode.Uri[],
-    smartTree: boolean
+    smartTree: boolean,
+    excludedFolderPaths: Set<string> = new Set(),  // NEW: folders excluded from scanning
+    binaryFilePaths: Set<string> = new Set()       // NEW: binary files
 ): Promise<string> {
 
     const config = vscode.workspace.getConfiguration('projectBundler');
@@ -129,6 +131,8 @@ export async function generateBundle(
         rootPath,
         allFilePaths: allPaths,
         selectedPaths,
+        excludedFolderPaths,  // NEW
+        binaryFilePaths,      // NEW
         smartCompression: smartTree
     });
     const tree = treeGen.generate();

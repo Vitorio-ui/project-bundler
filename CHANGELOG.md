@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.2.5] - 2026-03-09
+
+### Added
+- **Three-Tier Exclusion System:** Complete refactor of the ignore engine with three independent exclusion categories:
+  - `projectBundler.excludeFolders`: Folder patterns excluded from scanning (never entered during file discovery)
+  - `projectBundler.binaryExtensions`: File extensions treated as binary (shown in tree, content never read) — expanded from existing setting
+  - `projectBundler.userExcludes`: Additional glob patterns applied on top of folder and binary excludes
+- **Fast Folder Exclusion:** New `isFolderExcluded()` method in `IgnoreEngine` performs pattern matching before directory traversal, preventing unnecessary file system scans of excluded folders.
+- **VS Code findFiles Integration:** Exclude patterns now passed directly to `vscode.workspace.findFiles()` as second parameter, preventing VS Code from entering excluded folders at the filesystem level (not just post-filtering).
+- **Tree Visualization:** Excluded folders now display as `[excluded]` in the tree without recursing into contents. Binary files display as `[binary]`.
+- **Unit Tests:** Added 3 new tests for excluded folders and binary file rendering in `TreeGenerator`.
+
+### Changed
+- **IgnoreEngine Refactor:** Removed hardcoded `alwaysExclude` array. All exclusion rules now load from VS Code settings.
+- **Backward Compatibility:** `projectBundler.customExcludes` is deprecated but still functional (merged with `userExcludes`). `projectBundler.binaryExtensions` is now the primary setting (no longer deprecated).
+- **TreeGenerator Interface:** Added optional `excludedFolderPaths` and `binaryFilePaths` to `TreeOptions` with default empty Sets — existing tests continue to work without modification.
+- **PresetEngine:** Updated `expandFolders()` to check folder exclusion before calling `findFiles()` AND pass exclude glob to `findFiles()` for true pre-scan exclusion.
+- **Async Fix:** `isFileExcluded()` and `isIgnored()` are now properly `async` with `await loadAllRules()` — fixes race condition where rules might not be loaded.
+
+### Fixed
+- **Gitignore Bug #1:** Patterns without slashes (e.g., `*.py`, `__pycache__`) in nested `.gitignore` files now correctly scope to their directory.
+- **Gitignore Bug #2:** Patterns with leading slashes (e.g., `/dist`) now correctly remove the slash and scope to the `.gitignore` directory.
+- **Performance:** Reduced file system I/O by checking folder exclusion before directory traversal AND by passing exclude patterns to `findFiles()`.
+- **`docs/bundles` in excludeFolders:** Removed — was ineffective since `isFolderExcluded` checks basename only, not full paths.
+- **`excludeBinaries` duplicate setting:** Removed — functionality merged into existing `binaryExtensions` setting.
+- **Race condition in `isIgnored()`:** Now properly awaits `loadAllRules()` before checking rules.
+- **Auto-save permission denied error:** Fixed `EACCES: permission denied, mkdir '/docs'` when VS Code is opened without a workspace. Auto-save now uses `rootPath` (common ancestor of selected files) instead of `workspaceFolders[0]`, ensuring `docs/bundles/` is created in the project directory.
+
+### Technical Changes
+- **Dependencies:** No new dependencies. Custom simple glob matching implemented without external libraries.
+- **Files Changed:** `package.json`, `package.nls*.json`, `src/ignoreEngine.ts`, `src/treeGenerator.ts`, `src/presetEngine.ts`, `src/extension.ts`, `src/bundler.ts`
+
 ## [0.2.4] - 2026-03-06
 
 ### Added
