@@ -2,7 +2,7 @@
   "name": "project-bundler",
   "displayName": "Project Bundler (Context Builder for AI)",
   "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
@@ -85,6 +85,8 @@
             ".idea",
             ".vs",
             "node_modules",
+            "bower_components",
+            "jspm_packages",
             "out",
             "dist",
             "build",
@@ -105,6 +107,8 @@
             ".mypy_cache",
             ".ruff_cache",
             ".gradle",
+            ".mvn",
+            ".cargo",
             "cmake-build-debug",
             "cmake-build-release",
             "Debug",
@@ -112,6 +116,9 @@
             "bin",
             "obj",
             "vendor",
+            "packages",
+            "Pods",
+            ".pub",
             "models",
             "checkpoints",
             "weights",
@@ -122,7 +129,8 @@
             "temp",
             ".tmp",
             ".terraform",
-            ".serverless"
+            ".serverless",
+            "docs/bundles"
           ]
         },
         "projectBundler.userExcludes": {
@@ -137,6 +145,42 @@
           "type": "array",
           "default": [],
           "description": "Deprecated: Use projectBundler.userExcludes instead. This setting is kept for backward compatibility."
+        },
+        "projectBundler.includeDocsFromGitignore": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Include `docs/` folder in bundle even if it is listed in `.gitignore`. Useful for AI documentation bundles."
+        },
+        "projectBundler.useBundlerignore": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable `.bundlerignore` file support. This file works like `.gitignore` but only for Project Bundler."
+        },
+        "projectBundler.transformJsonFiles": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Transform JSON files to AI-friendly YAML-like format. Saves 60-90% tokens on package-lock.json, tsconfig.json, etc."
+        },
+        "projectBundler.extractDatabaseSchema": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Extract database schema from SQLite files and SQL migrations. Outputs SQL + Mermaid ER diagram for AI context."
+        },
+        "projectBundler.tokenWarningThresholds": {
+          "type": "array",
+          "items": { "type": "number" },
+          "default": [32000, 64000, 128000],
+          "markdownDescription": "Show warning when bundle exceeds these token thresholds. Set to empty array `[]` to disable warnings."
+        },
+        "projectBundler.suppressEditorTab": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Don't open bundle in editor tab. Bundle is still copied to clipboard. Enable for clipboard-only workflow."
+        },
+        "projectBundler.useDependencyOrdering": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Sort files by dependency order (entry points first, then dependencies). EA-04 feature."
         },
         "projectBundler.binaryExtensions": {
           "type": "array",
@@ -276,6 +320,16 @@
         "icon": "$(organization)"
       },
       {
+        "command": "project-bundler.bundleDebug",
+        "title": "%command.bundleDebug%",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "project-bundler.selectFolders",
+        "title": "Select Folders to Include...",
+        "icon": "$(checklist)"
+      },
+      {
         "command": "project-bundler.enterLicense",
         "title": "%command.license%",
         "icon": "$(key)"
@@ -300,6 +354,11 @@
           "group": "1_main"
         },
         {
+          "command": "project-bundler.selectFolders",
+          "title": "Select Folders to Include...",
+          "group": "1_main"
+        },
+        {
           "command": "project-bundler.bundleFull",
           "group": "1_main"
         },
@@ -309,6 +368,10 @@
         },
         {
           "command": "project-bundler.bundleArch",
+          "group": "2_presets"
+        },
+        {
+          "command": "project-bundler.bundleDebug",
           "group": "2_presets"
         },
         {
@@ -338,6 +401,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "ignore": "^7.0.5"
+    "fast-xml-parser": "^5.5.6",
+    "ignore": "^7.0.5",
+    "toml": "^3.0.0",
+    "yaml": "^2.8.2"
   }
 }

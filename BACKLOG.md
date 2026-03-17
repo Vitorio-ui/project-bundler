@@ -38,6 +38,21 @@
 | **Bug Fix:** Remove docs/bundles from excludeFolders (basename vs path issue) | v0.2.5 |
 | **Bug Fix:** Remove duplicate excludeBinaries setting (merged into binaryExtensions) | v0.2.5 |
 | **Bug Fix:** Auto-save permission denied when no workspace (EACCES: mkdir '/docs') | v0.2.5 |
+| **Performance:** Optimize getExcludedFolderPaths() to use findFiles instead of recursive scan | v0.2.6 |
+| **Performance:** Add progress reporting for scanning phase | v0.2.6 |
+| **Feature:** `.bundlerignore` file support (F-01) | v0.2.6 |
+| **Feature:** includeDocsFromGitignore setting | v0.2.6 |
+| **Feature:** JSON Transformer for AI-friendly output (package.json, package-lock.json, tsconfig.json, VS Code settings, Python, Rust, Go, PHP, Ruby) | v0.2.6 |
+| **Feature:** Database Schema Extractor (SQLite + SQL migrations + Prisma) with Mermaid ER diagrams | v0.2.6 |
+| **Feature:** Early Access Presets (Architecture, Minimal, Debug) | v0.2.6 |
+| **Feature:** Interactive Folder Selection Dialog (EA-07) | v0.2.6 |
+| **Feature:** Context-aware File Ordering (EA-04) — basic implementation | v0.2.6 |
+| **Feature:** Token Warning Thresholds (F-02) | v0.2.6 |
+| **Feature:** Suppress Editor Tab (F-03) | v0.2.6 |
+| **Feature:** Token count per file/folder in tree (F-04) | v0.2.6 |
+| **Documentation:** Language-specific exclusions guide (EXCLUSIONS_BY_LANGUAGE.md) | v0.2.6 |
+| **Feature:** EA-04 Complete — Dependency graph, improved import resolution, [entry] markers | v0.2.6 |
+| **Tech Debt:** Unit tests for jsonTransformer.ts, dbExtractor.ts, dependencyGraph.ts, folderSelector.ts (TD-07, TD-08, TD-09, TD-10) | v0.2.6 |
 
 ---
 
@@ -49,10 +64,14 @@ These block confidence in future changes.
 |---|---|---|---|
 | TD-01 | Snapshot tests for `bundler.ts` output | Deferred: bundler tests require complex VSCode API mocks. TreeGenerator tests cover core logic. | ⚠️ Deferred |
 | TD-02 | Unit tests for `TreeGenerator` | 24 tests covering: basic rendering, Smart compression, batch threshold, Windows paths, context siblings, excluded folders, binary files | ✅ Done v0.2.5 |
-| TD-03 | Integration test for `runBundler` pipeline | Use `@vscode/test-electron`; at minimum test Full and Selected presets | 📋 Backlog |
+| TD-03 | Integration test for `runBundler` pipeline | Use `@vscode/test-electron`; at minimum test Full and Selected presets | ⚠️ Deferred (requires VS Code test harness) |
 | TD-04 | Pre-publish validation script | Script at `scripts/validate.sh`, runs compile + lint + tests + version check | ✅ Done v0.2.3 |
 | TD-05 | README ↔ settings sync checklist | Automated as `scripts/check-settings-sync.js`, runs in validate step | ✅ Done v0.2.3 |
 | TD-06 | Fix dead code: batch folder names display (lines 212-215) | `folderNames` never populated — cold folders render directly in `renderChildren`. Requires refactoring batch logic. | ✅ Done v0.2.5 |
+| TD-07 | Unit tests for `jsonTransformer.ts` | 30+ tests covering: package.json, package-lock.json, tsconfig.json, VS Code settings, Python, Rust, Go, PHP, Ruby transformers | ✅ Done v0.2.6 |
+| TD-08 | Unit tests for `dbExtractor.ts` | 15+ tests covering: SQLite detection, migration file detection, Prisma schema parsing, result structures | ✅ Done v0.2.6 |
+| TD-09 | Unit tests for `dependencyGraph.ts` | 35+ tests covering: graph construction, depth calculation, import parsing for 10+ languages, entry point detection | ✅ Done v0.2.6 |
+| TD-10 | Unit tests for `folderSelector.ts` | 25+ tests covering: exclusion logic, selection management, path handling, parent-child selection | ✅ Done v0.2.6 |
 
 ---
 
@@ -60,11 +79,10 @@ These block confidence in future changes.
 
 | ID | Item | Priority | Notes |
 |---|---|---|---|
-| F-01 | `BUNDLER.ignore` file support | P2 | Project-level ignore rules separate from `.gitignore` |
-| F-02 | Token-aware soft warning thresholds | P2 | Warn at 32k / 64k / 128k tokens |
-| F-03 | Setting to suppress editor tab on bundle | P3 | Some users want clipboard-only output |
-| F-04 | Token count per file/folder in tree | P1 | Show ~Xk tokens next to each node in tree and in file headers. Two-pass: collect tokens during content read, aggregate up tree. 
-Free: display only. Pro (P-04): auto-exclude over budget. Target: v0.2.6 |
+| F-01 | `BUNDLER.ignore` file support | ✅ Done v0.2.6 | Implemented as `.bundlerignore` |
+| F-02 | Token-aware soft warning thresholds | ✅ Done v0.2.6 | Warn at 32k / 64k / 128k tokens |
+| F-03 | Setting to suppress editor tab on bundle | ✅ Done v0.2.6 | Clipboard-only workflow option |
+| F-04 | Token count per file/folder in tree | ✅ Done v0.2.6 | Display only (Pro: auto-exclude over budget) |
 
 ---
 
@@ -72,11 +90,13 @@ Free: display only. Pro (P-04): auto-exclude over budget. Target: v0.2.6 |
 
 | ID | Item | Priority | Notes |
 |---|---|---|---|
-| EA-01 | Preset: Architecture | P0 | Interfaces, types, configs, folder structure; see PRD US-10 |
-| EA-02 | Preset: Minimal | P0 | Entry points + package.json only; see PRD US-11 |
-| EA-03 | Preset: Debug | P1 | Entry points + recently modified files |
-| EA-04 | Context-aware file ordering | P1 | Entry points first, dependencies second |
+| EA-01 | Preset: Architecture | ✅ Done v0.2.6 | Interfaces, types, configs, folder structure |
+| EA-02 | Preset: Minimal | ✅ Done v0.2.6 | Entry points + package.json only |
+| EA-03 | Preset: Debug | ✅ Done v0.2.6 | Entry points + error-prone paths |
+| EA-04 | Context-aware file ordering | ✅ Done v0.2.6 | Entry points first, dependencies second. Features: dependency graph, import parsing for 10+ languages, visual [entry] markers in tree, enabled by default |
 | EA-05 | Custom Presets (save/load per workspace) | P2 | User-defined filter configurations |
+| EA-06 | Database Schema Context | ✅ Done v0.2.6 | SQLite + migrations + Prisma parser |
+| EA-07 | Interactive Folder Selection Dialog | ✅ Done v0.2.6 | Right-click → checklist with [Done] button |
 
 ---
 
@@ -88,10 +108,10 @@ Free: display only. Pro (P-04): auto-exclude over budget. Target: v0.2.6 |
 | P-02 | Context Profiles (per workspace config) | P0 | Saved preset + exclude combos |
 | P-03 | Diff Mode | P0 | Bundle only files changed since last git commit |
 | P-04 | Token Budget Targeting — depends on F-04 (token counts in tree) | P1 | "Fit in 8k / 32k / 128k" — auto-trim strategy |
-| P-05 | Database Schema Context | P1 | Parse SQL migrations / ORM models |
+| P-05 | ~~Database Schema Context~~ | ✅ Moved to EA-06 | Moved to Early Access for monetization in v1.0 |
 | P-06 | API Context | P1 | Extract REST/GraphQL route definitions |
 | P-07 | Auto-summary for collapsed folders | P1 | One-line AI-generated description of hidden content |
-| P-08 | Smart file ordering engine | P2 | Re-order files by dependency graph |
+| P-08 | Smart file ordering engine | ✅ Done v0.2.6 (EA-04) | Implemented as dependency-based ordering |
 | P-09 | Infra Context | P2 | Parse Dockerfile, docker-compose, k8s manifests |
 | P-10 | Priority support channel | P2 | Dedicated GitHub label for Pro users |
 

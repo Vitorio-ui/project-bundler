@@ -67,6 +67,30 @@ Works out-of-the-box with pre-configured ignore rules for:
 *   **Systems:** C++, Rust (`target` ignored), Java/Kotlin
 *   **Common:** `.git`, `.vscode`, lockfiles, binary artifacts are excluded automatically.
 
+See [docs/EXCLUSIONS_BY_LANGUAGE.md](docs/EXCLUSIONS_BY_LANGUAGE.md) for full language support details.
+
+### 🧠 **JSON Transformer** (v0.2.6)
+Automatically transforms JSON files into AI-friendly YAML-like format:
+*   **package.json** → metadata, scripts, dependencies (85% token savings)
+*   **package-lock.json** → dependency tree structure (90% token savings)
+*   **tsconfig.json** → compiler options, paths (60% token savings)
+*   **VS Code settings** → grouped settings by category
+*   Disabled via `projectBundler.transformJsonFiles` setting
+
+### 🗄️ **Database Schema Extractor** (v0.2.6)
+Extracts database schema from SQLite files and SQL migrations:
+*   **SQLite files** (`.db`, `.sqlite`, `.sqlite3`) → table structure + Mermaid ER diagram
+*   **SQL migrations** → parsed CREATE TABLE/INDEX statements
+*   Outputs SQL schema + visual Mermaid diagram for AI context
+*   Disabled via `projectBundler.extractDatabaseSchema` setting
+
+### 📁 **Interactive Folder Selection** (v0.2.6)
+Select which folders to include in the bundle:
+*   Right-click → "Select Folders to Include... (EA)"
+*   Visual checklist with Select All / Deselect All / Reset
+*   Nested folder tree with inheritance
+*   Disabled via `projectBundler.selectFolders` command
+
 ### 🌍 **Multi-language Output**
 The generated bundle (headers, stats, structure notes) respects your language settings.
 Supported: English, Russian, Spanish, German, French, Japanese, Chinese.
@@ -98,13 +122,23 @@ No network requests. No data collection. Works fully offline.
 *   `projectBundler.language`:
   * `auto` (default) — matches VS Code UI language
   * `en`, `ru`, `es`, `de`, `fr`, `ja`, `zh-cn` — forces bundle output language
+*   `projectBundler.useDependencyOrdering`: Sort files by dependency order (entry points first, then dependencies). EA-04 feature (Default: `true`).
+*   `projectBundler.tokenWarningThresholds`: Show warning when bundle exceeds these token thresholds. Default: `[32000, 64000, 128000]`. Set to empty array `[]` to disable warnings.
+*   `projectBundler.suppressEditorTab`: Don't open bundle in editor tab. Bundle is still copied to clipboard. Enable for clipboard-only workflow (Default: `false`).
 
 ### Exclusion Settings (v0.2.5)
 
-*   `projectBundler.excludeFolders`: Folder name patterns to exclude from bundling. Supports glob suffixes/prefixes (e.g. `*_venv`, `.cache`). Matched folders are never scanned. Default includes: `.git`, `node_modules`, `venv`, `__pycache__`, `dist`, `build`, etc.
+*   `projectBundler.excludeFolders`: Folder name patterns to exclude from bundling. Supports glob suffixes/prefixes (e.g. `*_venv`, `.cache`). Matched folders are never scanned. Default includes: `.git`, `node_modules`, `venv`, `__pycache__`, `dist`, `build`, etc. See [docs/EXCLUSIONS_BY_LANGUAGE.md](docs/EXCLUSIONS_BY_LANGUAGE.md) for full list.
 *   `projectBundler.binaryExtensions`: File extensions to treat as binary. These files appear in the tree but their content is never read. Default includes: `.png`, `.jpg`, `.pdf`, `.exe`, `.dll`, `.pyc`, `.pth`, `.onnx`, etc.
 *   `projectBundler.userExcludes`: Additional glob patterns to exclude. Applied on top of folder and binary excludes. `.gitignore` files are merged automatically.
 *   `projectBundler.customExcludes`: **Deprecated** (v0.2.5). Use `projectBundler.userExcludes` instead. Kept for backward compatibility.
+
+### Content Transformers (v0.2.6)
+
+*   `projectBundler.transformJsonFiles`: Transform JSON files to AI-friendly YAML-like format. Saves 60-90% tokens on `package-lock.json`, `tsconfig.json`, etc. (Default: `true`).
+*   `projectBundler.extractDatabaseSchema`: Extract database schema from SQLite files and SQL migrations. Outputs SQL + Mermaid ER diagram for AI context. (Default: `true`).
+*   `projectBundler.includeDocsFromGitignore`: Include `docs/` folder in bundle even if it is listed in `.gitignore`. Useful for AI documentation bundles. (Default: `false`).
+*   `projectBundler.useBundlerignore`: Enable `.bundlerignore` file support. This file works like `.gitignore` but only for Project Bundler. (Default: `true`).
 
 ---
 
@@ -121,16 +155,21 @@ We believe in a usable Free tier, not a crippled demo.
 | **Ignore Engine** (.gitignore + auto rules) | ✅ | ✅ |
 | **File Modification Dates** | ✅ | ✅ |
 | **Auto-Save Bundles** | ✅ | ✅ |
-| **Custom Excludes** (manual ignore rules) | ❌ | ✅ |
+| **`.bundlerignore` Support** | ✅ | ✅ |
+| **JSON Transformer** (AI-friendly format) | ✅ | ✅ |
+| **Database Schema Extractor** | ✅ | ✅ |
 | **Smart Tree Compression** | ✅ (Opt-in) | ✅ |
-| **Context Presets** (Minimal, Arch, Debug) | ❌ | ✅ |
-| **Database Schema Context** | ❌ | ✅ |
+| **Custom Excludes** (manual ignore rules) | ✅ | ✅ |
+| **Context Presets** (Minimal, Arch, Debug) | ✅ (EA) | ✅ |
+| **Interactive Folder Selection** (EA-07) | ✅ (EA) | ✅ |
+| **File Ordering Engine** (EA-04) | ✅ (EA) | ✅ |
+| **Token Warning Thresholds** | ✅ | ✅ |
+| **Suppress Editor Tab** | ✅ | ✅ |
 | **API Context** | ❌ | ✅ |
 | **Infra Context** | ❌ | ✅ |
-| **File Ordering Engine** | ❌ | ✅ |
 | **Priority Support** | ❌ | ✅ |
 
-> **Note on Early Access:** Smart Tree is a premium feature. It is currently enabled for all users to gather feedback. In version 1.0, it will be part of the Pro plan.
+> **Note on Early Access:** Features marked (EA) are currently free to gather feedback. In version 1.0, some may become part of the Pro plan. This includes Smart Tree Compression, Context Presets, Interactive Folder Selection, and File Ordering Engine.
 
 ---
 

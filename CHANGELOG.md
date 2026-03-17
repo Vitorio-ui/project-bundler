@@ -1,5 +1,116 @@
 # Changelog
 
+## [0.2.6] - 2026-03-17
+
+### Added
+- **JSON Transformer:** Automatic transformation of JSON files to AI-friendly YAML-like format:
+  - `package.json` → metadata, scripts, dependencies (85% token savings)
+  - `package-lock.json` → dependency tree structure only (90% token savings)
+  - `tsconfig.json` → compiler options, paths, includes/excludes (60% token savings)
+  - `.vscode/*.json` → grouped settings (settings.json, launch.json, tasks.json, extensions.json)
+  - **Python:** `requirements.txt`, `Pipfile`, `pyproject.toml` (40-60% savings)
+  - **Rust:** `Cargo.toml`, `Cargo.lock` (50-70% savings)
+  - **Go:** `go.mod`, `go.sum` (60-80% savings)
+  - **PHP:** `composer.json`, `composer.lock` (50-70% savings)
+  - **Ruby:** `Gemfile`, `Gemfile.lock` (50-70% savings)
+  - Generic JSON/YAML/TOML/XML → YAML-like conversion for other files
+- **Database Schema Extractor:** Extract database schema from multiple sources:
+  - SQLite files (`.db`, `.sqlite`, `.sqlite3`) → table structure with columns, indexes, foreign keys
+  - SQL migration files → parsed CREATE TABLE/INDEX/ALTER TABLE statements
+  - **Prisma:** `schema.prisma` → models, fields, relations
+  - Mermaid ER diagram output for visual AI context
+  - Relationship detection from foreign keys
+- **`.bundlerignore` Support (F-01):** Project-level ignore file separate from `.gitignore`:
+  - Works like `.gitignore` but only for Project Bundler
+  - Supports all gitignore patterns (prefix, suffix, wildcards, negation)
+  - Nested `.bundlerignore` files in subdirectories
+  - Enabled by default via `projectBundler.useBundlerignore` setting
+- **includeDocsFromGitignore Setting:** Include `docs/` folder in bundle even if listed in `.gitignore`:
+  - Useful for AI documentation bundles
+  - Skips `docs/` patterns from `.gitignore` when enabled
+  - Disabled by default (opt-in)
+- **Early Access Presets:**
+  - **Architecture Preset (EA-01):** Interfaces, types, configs, folder structure only
+  - **Minimal Preset (EA-02):** Entry points + package.json only (90-95% token savings)
+  - **Debug Preset (EA-03):** Entry points + error-prone paths (logger, errors, middleware)
+- **Interactive Folder Selection (EA-07):** Dialog for selecting folders to include:
+  - Right-click → "Select Folders to Include..."
+  - Checklist with Select All / Deselect All / Reset
+  - Visual tree with nested folders
+- **Context-aware File Ordering (EA-04):** Sort files by dependency graph:
+  - Entry points first (index, main, app)
+  - Then dependencies in topological order
+  - Supports 10 languages (TS, JS, Python, Rust, Go, PHP, Ruby, Java, C#, Rust)
+  - Mermaid dependency diagram in bundle
+  - Enabled via `projectBundler.useDependencyOrdering` setting
+- **Token Count per File/Folder (F-04):** Display token counts in tree:
+  - Per-file: `filename.ts (~1.2k)`
+  - Per-folder: `src/ (~15.2k)`
+  - Aggregated from all nested files
+- **Token Warning Thresholds (F-02):** Soft warnings for large bundles:
+  - Default thresholds: 32k, 64k, 128k tokens
+  - Configurable via `projectBundler.tokenWarningThresholds`
+  - "Don't show again" option per threshold
+- **Suppress Editor Tab (F-03):** Clipboard-only workflow:
+  - Enable via `projectBundler.suppressEditorTab`
+  - Bundle copied to clipboard without opening editor
+  - Toast notification on completion
+- **Performance Optimizations:**
+  - `getExcludedFolderPaths()` uses `findFiles` instead of recursive scan (10-60x faster)
+  - Progress reporting for scanning phase with percentages
+  - Reduced duplicate filtering in `extension.ts`
+- **Documentation:** New `docs/EXCLUSIONS_BY_LANGUAGE.md` with comprehensive language-specific exclusion guide
+
+### Changed
+- **Updated README.md:** Added JSON Transformer, Database Extractor, Presets, and new settings documentation
+- **Expanded excludeFolders defaults:** Added `bower_components`, `jspm_packages`, `.mvn`, `.cargo`, `packages`, `Pods`, `.pub` for broader language support
+- **Free Tier Features:** JSON Transformer, Database Extractor, File Ordering, Folder Selection are free (moved from Pro tier)
+- **BACKLOG.md:** Database Schema moved to Early Access (EA-06) for future monetization
+
+### Fixed
+- **docs/bundles exclusion:** Re-added to `excludeFolders` defaults (prevents bundle zipping)
+- **Prisma parsing:** Handle optional fields and relations correctly
+
+### Technical Changes
+- **New Files:** 
+  - `src/jsonTransformer.ts` (~900 lines, language-specific transformers)
+  - `src/dbExtractor.ts` (~350 lines, SQLite + migrations + Prisma)
+  - `src/dependencyGraph.ts` (~280 lines, import parsing + topological sort)
+  - `src/folderSelector.ts` (~280 lines, interactive dialog)
+  - `src/parsers/index.ts` (~80 lines, YAML/TOML/XML parsers)
+  - `docs/EXCLUSIONS_BY_LANGUAGE.md` (language-specific exclusion guide)
+- **Modified Files:** `package.json`, `package.nls*.json`, `src/ignoreEngine.ts`, `src/bundler.ts`, `src/extension.ts`, `src/presetEngine.ts`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`
+- **Dependencies:** Added `yaml`, `toml`, `fast-xml-parser` (3 packages, ~50KB total)
+
+### Settings Added
+- `projectBundler.transformJsonFiles` (Default: `true`) — Enable/disable JSON transformation
+- `projectBundler.extractDatabaseSchema` (Default: `true`) — Enable/disable database schema extraction
+- `projectBundler.useBundlerignore` (Default: `true`) — Enable/disable `.bundlerignore` file support
+- `projectBundler.includeDocsFromGitignore` (Default: `false`) — Include `docs/` even if in `.gitignore`
+- `projectBundler.useDependencyOrdering` (Default: `false`) — Sort files by dependency order
+- `projectBundler.tokenWarningThresholds` (Default: `[32000, 64000, 128000]`) — Token warning thresholds
+- `projectBundler.suppressEditorTab` (Default: `false`) — Clipboard-only workflow
+
+### Token Savings Examples
+| File | Before | After | Savings |
+|------|--------|-------|---------|
+| `package-lock.json` | ~29k tokens | ~3k tokens | 90% |
+| `package.json` | ~1.8k tokens | ~200 tokens | 89% |
+| `tsconfig.json` | ~122 tokens | ~50 tokens | 59% |
+| `Cargo.lock` (Rust) | ~15k tokens | ~5k tokens | 67% |
+| `go.sum` (Go) | ~50k tokens | ~10k tokens | 80% |
+| `composer.lock` (PHP) | ~20k tokens | ~7k tokens | 65% |
+| SQLite (10 tables) | 0 (binary) | ~500 tokens | +new info |
+| Prisma schema (20 models) | ~2k tokens | ~1k tokens | 50% |
+
+### Bundle Size by Preset
+| Preset | Files | Tokens | Reduction |
+|--------|-------|--------|-----------|
+| **Full** | 100% | ~100k | — |
+| **Architecture** | ~15-25% | ~15-25k | 75-85% |
+| **Minimal** | ~5-10% | ~5-10k | 90-95% |
+| **Debug** | ~10-20% | ~10-20k | 80-90% |
+
 ## [0.2.5] - 2026-03-09
 
 ### Added

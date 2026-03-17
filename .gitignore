@@ -3,6 +3,7 @@ node_modules/
 .vscode-test/
 .vscode/
 out/
+out-test/
 *.vsix
 docs/
 test/

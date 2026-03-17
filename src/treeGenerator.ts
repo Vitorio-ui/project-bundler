@@ -1,4 +1,5 @@
 import * as path from 'path';
+import { TokenStats } from './tokenStats';
 
 interface TreeNode {
     name: string;
@@ -10,6 +11,9 @@ interface TreeNode {
     isContextNode: boolean;  // NEW: попадает в радиус ±2 от выбранного
     isExcludedFolder: boolean;  // NEW: папка исключена из сканирования
     isBinary: boolean;          // NEW: файл бинарный (в дереве, не в контенте)
+    isEntryPoint: boolean;      // NEW: файл является точкой входа (EA-04)
+    tokenCount?: number;        // NEW: estimated tokens for this file (only for files)
+    folderTokenCount?: number;  // NEW: aggregated tokens for folder (sum of all files inside)
 }
 
 export interface TreeOptions {
@@ -19,6 +23,7 @@ export interface TreeOptions {
     excludedFolderPaths?: Set<string>;  // optional with default
     binaryFilePaths?: Set<string>;      // optional with default
     smartCompression: boolean;
+    fileTokenCounts?: Map<string, number>;  // NEW: map of file path -> token count
 }
 
 export class TreeGenerator {
@@ -27,18 +32,20 @@ export class TreeGenerator {
     private normalizedSelected: Set<string>;
     private normalizedExcludedFolders: Set<string>;
     private normalizedBinaryFiles: Set<string>;
+    private normalizedTokenCounts: Map<string, number>;  // NEW: normalized path -> token count
 
     constructor(private options: TreeOptions) {
-        this.root = { 
-            name: path.basename(options.rootPath), 
-            path: '', 
-            isFile: false, 
-            children: [], 
-            hasSelectedContent: false, 
-            isSelected: false, 
+        this.root = {
+            name: path.basename(options.rootPath),
+            path: '',
+            isFile: false,
+            children: [],
+            hasSelectedContent: false,
+            isSelected: false,
             isContextNode: false,
             isExcludedFolder: false,
-            isBinary: false
+            isBinary: false,
+            isEntryPoint: false
         };
         // Нормализуем selectedPaths к '/' для консистентности
         this.normalizedSelected = new Set(
@@ -51,6 +58,10 @@ export class TreeGenerator {
         // Нормализуем binaryFilePaths (default = empty Set)
         this.normalizedBinaryFiles = new Set(
             [...(options.binaryFilePaths || new Set())].map(p => p.split(path.sep).join('/'))
+        );
+        // Нормализуем fileTokenCounts (default = empty Map)
+        this.normalizedTokenCounts = new Map(
+            [...(options.fileTokenCounts || new Map())].map(([k, v]) => [k.split(path.sep).join('/'), v])
         );
         this.buildTree();
     }
@@ -73,6 +84,8 @@ export class TreeGenerator {
                     const isExcludedFolder = this.normalizedExcludedFolders.has(currentPath);
                     const isFile = isLastPart && !isExcludedFolder;
                     const isBinary = isFile && this.normalizedBinaryFiles.has(currentPath);
+                    const isEntryPoint = isFile && this.isEntryPointFile(filePath);
+                    const tokenCount = isFile ? (this.normalizedTokenCounts.get(currentPath) ?? undefined) : undefined;
                     currentNode = {
                         name: parts[i],
                         path: currentPath,
@@ -82,7 +95,9 @@ export class TreeGenerator {
                         isSelected: false,
                         isContextNode: false,
                         isExcludedFolder,
-                        isBinary
+                        isBinary,
+                        isEntryPoint,
+                        tokenCount
                     };
                     parentNode.children.push(currentNode);
                     nodeMap.set(currentPath, currentNode);
@@ -105,6 +120,38 @@ export class TreeGenerator {
         }
 
         this.markContextSiblings(this.root);
+        this.aggregateFolderTokens(this.root);
+    }
+
+    /**
+     * Check if a file is an entry point (EA-04)
+     */
+    private isEntryPointFile(filePath: string): boolean {
+        const basename = path.basename(filePath).toLowerCase();
+        const basenameNoExt = basename.replace(/\.[^.]+$/, '');
+        const entryPointNames = [
+            'index', 'main', 'app', 'entry', 'start', 'init',
+            '__main__', 'cli', 'server', 'client',
+            'program', 'bootstrap', 'launcher'
+        ];
+        return entryPointNames.some(name => basenameNoExt === name);
+    }
+
+    /**
+     * Recursively aggregate token counts for folders
+     * Each folder's folderTokenCount = sum of all file tokens inside it
+     */
+    private aggregateFolderTokens(node: TreeNode): number {
+        if (node.isFile) {
+            return node.tokenCount ?? 0;
+        }
+
+        let totalTokens = 0;
+        for (const child of node.children) {
+            totalTokens += this.aggregateFolderTokens(child);
+        }
+        node.folderTokenCount = totalTokens;
+        return totalTokens;
     }
 
     private sortedChildren(node: TreeNode): TreeNode[] {
@@ -262,18 +309,26 @@ export class TreeGenerator {
                         output += `${prefix}${connector}${child.name} [binary]\n`;
                     } else {
                         const isSelected = this.normalizedSelected.has(child.path);
-                        output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}\n`;
+                        const tokenStr = child.tokenCount !== undefined ? ` (~${TokenStats.format(child.tokenCount)})` : '';
+                        const entryMarker = child.isEntryPoint ? ' [entry]' : '';
+                        output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}${entryMarker}${tokenStr}\n`;
                     }
                 } else if (child.isExcludedFolder) {
                     // Excluded folder — show with [excluded] label, don't recurse
-                    output += `${prefix}${connector}${child.name}/ [excluded]\n`;
+                    const tokenStr = child.folderTokenCount !== undefined && child.folderTokenCount > 0
+                        ? ` (~${TokenStats.format(child.folderTokenCount)})` : '';
+                    output += `${prefix}${connector}${child.name}/ [excluded]${tokenStr}\n`;
                 } else if (!child.hasSelectedContent) {
                     // Cold folder — collapse with summary
                     const s = this.countDescendants(child);
-                    output += `${prefix}${connector}${child.name}/ ${this.makeFolderSummary(s.folders, s.files)}\n`;
+                    const tokenStr = child.folderTokenCount !== undefined && child.folderTokenCount > 0
+                        ? ` | ~${TokenStats.format(child.folderTokenCount)}` : '';
+                    output += `${prefix}${connector}${child.name}/ ${this.makeFolderSummary(s.folders, s.files)}${tokenStr}\n`;
                 } else {
                     // Hot folder — recurse
-                    output += `${prefix}${connector}${child.name}/\n`;
+                    const tokenStr = child.folderTokenCount !== undefined && child.folderTokenCount > 0
+                        ? ` (~${TokenStats.format(child.folderTokenCount)})` : '';
+                    output += `${prefix}${connector}${child.name}/${tokenStr}\n`;
                     output += this.renderNode(child, childPrefix, false);
                 }
             }
@@ -303,13 +358,19 @@ export class TreeGenerator {
 
             if (child.isFile) {
                 const isSelected = this.normalizedSelected.has(child.path);
-                output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}\n`;
+                const tokenStr = child.tokenCount !== undefined ? ` (~${TokenStats.format(child.tokenCount)})` : '';
+                const entryMarker = child.isEntryPoint ? ' [entry]' : '';
+                output += `${prefix}${connector}${child.name}${isSelected ? '' : ' [excluded]'}${entryMarker}${tokenStr}\n`;
             } else if (this.options.smartCompression && !child.hasSelectedContent) {
                 // Холодная папка — коллапсируем ЗДЕСЬ, без вызова renderNode
                 const s = this.countDescendants(child);
-                output += `${prefix}${connector}${child.name}/ ${this.makeFolderSummary(s.folders, s.files)}\n`;
+                const tokenStr = child.folderTokenCount !== undefined && child.folderTokenCount > 0
+                    ? ` | ~${TokenStats.format(child.folderTokenCount)}` : '';
+                output += `${prefix}${connector}${child.name}/ ${this.makeFolderSummary(s.folders, s.files)}${tokenStr}\n`;
             } else {
-                output += `${prefix}${connector}${child.name}/\n`;
+                const tokenStr = child.folderTokenCount !== undefined && child.folderTokenCount > 0
+                    ? ` (~${TokenStats.format(child.folderTokenCount)})` : '';
+                output += `${prefix}${connector}${child.name}/${tokenStr}\n`;
                 output += this.renderNode(child, childPrefix, false);
             }
         }

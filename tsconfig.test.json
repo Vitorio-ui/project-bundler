@@ -3,7 +3,10 @@
   "compilerOptions": {
     "types": ["mocha", "node"],
     "module": "commonjs",
-    "target": "ES2020"
+    "target": "ES2020",
+    "rootDir": ".",
+    "outDir": "out-test"
   },
-  "include": ["test/**/*.ts"]
+  "include": ["test/**/*.ts"],
+  "exclude": ["node_modules", "out", "out-test", "src"]
 }

@@ -13,6 +13,12 @@ export class IgnoreEngine {
     // Binary extensions set for quick lookup
     private binaryExtensions: Set<string> = new Set();
 
+    // Option to include docs/ even if in .gitignore
+    private includeDocsFromGitignore: boolean = false;
+
+    // Option to use .bundlerignore file
+    private useBundlerignore: boolean = true;
+
     constructor(private workspaceRoot: string) {}
 
     /**
@@ -21,6 +27,7 @@ export class IgnoreEngine {
      * 2. projectBundler.binaryExtensions -> binaryExtensions set + added to ig as glob patterns
      * 3. projectBundler.userExcludes + projectBundler.customExcludes (backward compat) -> added to ig
      * 4. All .gitignore files -> added to ig (with bug fixes 1 and 2)
+     * 5. projectBundler.includeDocsFromGitignore -> skip docs/ patterns from .gitignore
      */
     public async loadAllRules(): Promise<void> {
         if (this.rulesLoaded) return;
@@ -34,6 +41,12 @@ export class IgnoreEngine {
         const binaryExtensions = config.get<string[]>('binaryExtensions', []);
         const binaryExtensionsArray = binaryExtensions.map(e => e.toLowerCase());
         this.binaryExtensions = new Set(binaryExtensionsArray);
+
+        // 2.5. Load includeDocsFromGitignore option
+        this.includeDocsFromGitignore = config.get<boolean>('includeDocsFromGitignore', false);
+
+        // 2.6. Load useBundlerignore option
+        this.useBundlerignore = config.get<boolean>('useBundlerignore', true);
 
         // 3. Add binary extensions to ignore as "**/*.<ext>" patterns
         const binaryPatterns = binaryExtensionsArray.map(ext => `**/*${ext}`);
@@ -51,6 +64,11 @@ export class IgnoreEngine {
 
         // 5. Scan and merge all .gitignore files
         await this.scanAndMergeGitignoreFiles();
+
+        // 6. Scan and merge all .bundlerignore files (if enabled)
+        if (this.useBundlerignore) {
+            await this.scanAndMergeBundlerignoreFiles();
+        }
 
         this.rulesLoaded = true;
     }
@@ -186,6 +204,11 @@ export class IgnoreEngine {
                         // Skip empty lines and comments
                         if (!line || line.startsWith('#')) continue;
 
+                        // If includeDocsFromGitignore is enabled, skip docs/ related patterns
+                        if (this.includeDocsFromGitignore && this.isDocsPattern(line)) {
+                            continue;
+                        }
+
                         // Normalize relativeDir once per file
                         const normalizedRelativeDir = relativeDir && relativeDir !== ''
                             ? relativeDir.split(path.sep).join('/')
@@ -228,6 +251,103 @@ export class IgnoreEngine {
             console.log(`[IgnoreEngine] Merged ${allRules.length} rules from ${gitignoreFiles.length} .gitignore file(s)`);
         } catch (e) {
             console.error('Error scanning for nested .gitignore files:', e);
+        }
+    }
+
+    /**
+     * Check if a gitignore pattern relates to docs/ folder
+     * Used to skip docs/ patterns when includeDocsFromGitignore is enabled
+     */
+    private isDocsPattern(pattern: string): boolean {
+        // Direct docs/ patterns
+        if (pattern === 'docs' || pattern === 'docs/' || pattern === '/docs' || pattern === '/docs/') {
+            return true;
+        }
+        
+        // Glob patterns matching docs (e.g., **/docs, docs/**, *docs*)
+        if (pattern.includes('docs')) {
+            const normalized = pattern.replace(/^\/+/, '').replace(/\/+$/, '');
+            if (normalized === 'docs' || normalized.startsWith('docs/') || normalized.endsWith('/docs') || normalized.includes('docs/')) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Scan workspace for all .bundlerignore files and merge their rules
+     * .bundlerignore works like .gitignore but only for Project Bundler
+     */
+    private async scanAndMergeBundlerignoreFiles(): Promise<void> {
+        try {
+            // Find all .bundlerignore files, excluding node_modules for performance
+            const pattern = new vscode.RelativePattern(this.workspaceRoot, '**/.bundlerignore');
+            const bundlerignoreFiles = await vscode.workspace.findFiles(
+                pattern,
+                '**/node_modules/**'
+            );
+
+            const allRules: string[] = [];
+
+            for (const uri of bundlerignoreFiles) {
+                const bundlerignorePath = uri.fsPath;
+                const bundlerignoreDir = path.dirname(bundlerignorePath);
+
+                // Calculate path relative to workspace root
+                const relativeDir = path.relative(this.workspaceRoot, bundlerignoreDir);
+
+                try {
+                    const content = fs.readFileSync(bundlerignorePath, 'utf-8');
+                    const lines = content.split('\n');
+
+                    for (let line of lines) {
+                        line = line.trim();
+
+                        // Skip empty lines and comments
+                        if (!line || line.startsWith('#')) continue;
+
+                        // Normalize relativeDir once per file
+                        const normalizedRelativeDir = relativeDir && relativeDir !== ''
+                            ? relativeDir.split(path.sep).join('/')
+                            : '';
+
+                        // Pattern with leading slash (/dist) - remove / and scope to directory
+                        if (line.startsWith('/')) {
+                            line = line.substring(1);
+                            if (normalizedRelativeDir) {
+                                line = `${normalizedRelativeDir}/${line}`;
+                            }
+                        }
+                        // Pattern without slash (*.py, *) - scope to its directory
+                        else if (!line.startsWith('/') && !line.includes('/')) {
+                            if (normalizedRelativeDir) {
+                                line = `${normalizedRelativeDir}/**/${line}`;
+                            }
+                            // At workspaceRoot level (normalizedRelativeDir === '') - leave as-is
+                        }
+                        // Pattern with / but no leading slash - prepend relative directory
+                        else if (!line.startsWith('/') && line.includes('/')) {
+                            if (normalizedRelativeDir) {
+                                line = `${normalizedRelativeDir}/${line}`;
+                            }
+                        }
+
+                        allRules.push(line);
+                    }
+                } catch (e) {
+                    console.error(`Error reading .bundlerignore at ${bundlerignorePath}:`, e);
+                }
+            }
+
+            // Add all merged rules to ignore instance
+            if (allRules.length > 0) {
+                this.ig.add(allRules);
+            }
+
+            console.log(`[IgnoreEngine] Merged ${allRules.length} rules from ${bundlerignoreFiles.length} .bundlerignore file(s)`);
+        } catch (e) {
+            console.error('Error scanning for nested .bundlerignore files:', e);
         }
     }
 }
