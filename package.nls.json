@@ -1,5 +1,5 @@
 {
-    "submenu.label": "Project Bundler",
+    "submenu.label": "PromptPack",
     "command.smartMenu": "Prepare Context for AI...",
     "command.bundleSelectedSmart": "Bundle Selection (Smart)",
     "command.bundleFull": "Bundle Full Project",
@@ -15,7 +15,7 @@
     "config.excludeFolders": "Folder name patterns to exclude from bundling. Supports glob suffixes/prefixes (e.g. *_venv, .cache). Matched folders are never scanned.",
     "config.userExcludes": "Additional glob patterns to exclude. Applied on top of folder and binary excludes. .gitignore files are merged automatically.",
     "config.includeDocsFromGitignore": "Include `docs/` folder in bundle even if it is listed in `.gitignore`. Useful for AI documentation bundles.",
-    "config.useBundlerignore": "Enable `.bundlerignore` file support. This file works like `.gitignore` but only for Project Bundler.",
+    "config.useBundlerignore": "Enable `.bundlerignore` file support. This file works like `.gitignore` but only for PromptPack.",
     "config.transformJsonFiles": "Transform JSON files to AI-friendly YAML-like format. Saves 60-90% tokens on package-lock.json, tsconfig.json, etc.",
     "config.extractDatabaseSchema": "Extract database schema from SQLite files and SQL migrations. Outputs SQL + Mermaid ER diagram for AI context.",
     "config.tokenWarningThresholds": "Show warning when bundle exceeds these token thresholds. Set to empty array [] to disable warnings.",
@@ -27,6 +27,7 @@
     "config.dateFormat": "Date format. Use: DD, MM, YYYY.",
     "config.timeFormat": "Time format. Use: HH/hh, mm, ss.",
     "config.timeFormat12h": "Use 12-hour time format with AM/PM.",
+    "largeFiles": "Top heavy files",
     "command.fullProject": "BUNDLER: Full Project",
     "command.selected": "BUNDLER: Bundle Selected"
 }

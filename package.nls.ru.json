@@ -1,5 +1,5 @@
 {
-    "submenu.label": "Project Bundler: Контекст для ИИ",
+    "submenu.label": "PromptPack: Контекст для ИИ",
     "command.smartMenu": "Подготовить контекст для ИИ...",
     "command.bundleSelectedSmart": "Собрать выбранное (Smart)",
     "command.bundleFull": "Собрать весь проект",
@@ -15,7 +15,7 @@
     "config.excludeFolders": "Паттерны имён папок для исключения из бандла. Поддерживаются glob-суффиксы/префиксы (например, *_venv, .cache). Исключённые папки никогда не сканируются.",
     "config.userExcludes": "Дополнительные glob-паттерны для исключения. Применяются поверх исключений папок и бинарных файлов. Файлы .gitignore объединяются автоматически.",
     "config.includeDocsFromGitignore": "Включать папку `docs/` в бандл, даже если она указана в `.gitignore`. Полезно для бандлов документации ИИ.",
-    "config.useBundlerignore": "Включить поддержку файла `.bundlerignore`. Этот файл работает как `.gitignore`, но только для Project Bundler.",
+    "config.useBundlerignore": "Включить поддержку файла `.bundlerignore`. Этот файл работает как `.gitignore`, но только для PromptPack.",
     "config.transformJsonFiles": "Преобразовывать JSON-файлы в удобный для ИИ YAML-подобный формат. Экономит 60-90% токенов на package-lock.json, tsconfig.json и т.д.",
     "config.extractDatabaseSchema": "Извлекать схему базы данных из SQLite-файлов и SQL-миграций. Выводит SQL + Mermaid ER-диаграмму для контекста ИИ.",
     "config.tokenWarningThresholds": "Показывать предупреждение, когда бандл превышает эти пороги токенов. Установите пустой массив [] для отключения.",
@@ -27,6 +27,7 @@
     "config.dateFormat": "Формат даты. Используйте: DD, MM, YYYY.",
     "config.timeFormat": "Формат времени. Используйте: HH/hh, mm, ss.",
     "config.timeFormat12h": "Использовать 12-часовой формат времени с AM/PM.",
+    "largeFiles": "Самые тяжёлые файлы",
     "command.fullProject": "BUNDLER: Собрать весь проект",
     "command.selected": "BUNDLER: Собрать выбранное"
 }

@@ -277,7 +277,7 @@ export class IgnoreEngine {
 
     /**
      * Scan workspace for all .bundlerignore files and merge their rules
-     * .bundlerignore works like .gitignore but only for Project Bundler
+     * .bundlerignore works like .gitignore but only for PromptPack
      */
     private async scanAndMergeBundlerignoreFiles(): Promise<void> {
         try {

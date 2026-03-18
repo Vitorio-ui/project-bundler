@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { IgnoreEngine } from './ignoreEngine';
-import { generateBundle } from './bundler';
+import { generateBundle, generateMarkdownBundle } from './bundler';
 import { t } from './i18n';
 import { LicenseManager } from './licenseManager';
 import { PresetEngine, PresetType } from './presetEngine';
@@ -88,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Project Bundler",
+            title: "PromptPack",
             cancellable: false
         }, async (progress) => {
 
@@ -181,7 +181,7 @@ export function activate(context: vscode.ExtensionContext) {
             // Предупреждение если после фильтрации всё ещё много — значит ignoreEngine не покрывает что-то тяжёлое
             if (treeFiles.length > maxFilesWarning) {
                 const answer = await vscode.window.showWarningMessage(
-                    `Project Bundler: ${treeFiles.length} files found after filtering (limit: ${maxFilesWarning}). ` +
+                    `PromptPack: ${treeFiles.length} files found after filtering (limit: ${maxFilesWarning}). ` +
                     `Add heavy folders to customExcludes and retry.`,
                     'Cancel', 'Continue anyway'
                 );
@@ -189,10 +189,15 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             progress.report({ message: t('scanSelected'), increment: 85 });
-            
+
             // FIX: Pass already-scanned treeFiles to presetEngine instead of re-scanning
             const scanStart = Date.now();
-            const contentFiles = await presetEngine.getFiles(options.preset, treeFiles, targets);
+            
+            // Get maxAgeDays from config for Debug preset
+            const config = vscode.workspace.getConfiguration('projectBundler');
+            const maxAgeDays = config.get<number>('debugMaxAgeDays', 7);
+            
+            const contentFiles = await presetEngine.getFiles(options.preset, treeFiles, targets, maxAgeDays);
             progress.report({ message: `Selected ${contentFiles.length} files for content`, increment: 90 });
 
             // Collect excluded folder paths and binary file paths for tree rendering
@@ -225,7 +230,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             if (contentFiles.length > maxFilesWarning) {
                 const answer = await vscode.window.showWarningMessage(
-                    `Project Bundler: ${contentFiles.length} files selected for bundle content. This may produce a very large bundle.`,
+                    `PromptPack: ${contentFiles.length} files selected for bundle content. This may produce a very large bundle.`,
                     'Cancel', 'Continue anyway'
                 );
                 if (answer !== 'Continue anyway') { return; }
@@ -255,10 +260,10 @@ export function activate(context: vscode.ExtensionContext) {
                             
                             if (!isSuppressed) {
                                 const answer = await vscode.window.showWarningMessage(
-                                    `Project Bundler: Bundle size is ~${Math.round(tokenCount)} tokens, which exceeds the ${threshold} token threshold. Some LLMs may truncate or refuse this input.`,
+                                    `PromptPack: Bundle size is ~${Math.round(tokenCount)} tokens, which exceeds the ${threshold} token threshold. Some LLMs may truncate or refuse this input.`,
                                     'Cancel', 'Continue anyway', "Don't show again"
                                 );
-                                
+
                                 if (answer === 'Cancel') { return; }
                                 if (answer === "Don't show again") {
                                     await context.globalState.update(thresholdKey, true);
@@ -273,13 +278,23 @@ export function activate(context: vscode.ExtensionContext) {
             // F-03: Suppress editor tab if setting is enabled
             const suppressEditorTab = config.get<boolean>('suppressEditorTab', false);
             
+            // v0.2.7: Use new Markdown format for all presets
+            const useNewMarkdownFormat = config.get<boolean>('useMarkdownFormat', true);
+            
+            const bundleContent = useNewMarkdownFormat 
+                ? await generateMarkdownBundle(rootPath!, treeFiles, contentFiles, options.preset, useSmartTree, excludedFolderPaths, binaryFilePaths)
+                : finalContent;
+            
             if (!suppressEditorTab) {
-                const doc = await vscode.workspace.openTextDocument({ content: finalContent, language: 'markdown' });
+                // v0.2.7: Use markdown language for new format, plaintext for legacy
+                const useNewMarkdownFormat = config.get<boolean>('useMarkdownFormat', true);
+                const language = useNewMarkdownFormat ? 'markdown' : 'plaintext';
+                const doc = await vscode.workspace.openTextDocument({ content: bundleContent, language });
                 await vscode.window.showTextDocument(doc);
             }
 
-            await vscode.env.clipboard.writeText(finalContent);
-            
+            await vscode.env.clipboard.writeText(bundleContent);
+
             if (suppressEditorTab) {
                 vscode.window.showInformationMessage(`${t('done')} (copied to clipboard)`);
             } else {
@@ -296,10 +311,14 @@ export function activate(context: vscode.ExtensionContext) {
 
                     const folderName = path.basename(rootPath!);
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace(/T/, ' ').slice(0, -5);
-                    const fileName = `${folderName} - ${timestamp}.txt`;
+                    
+                    // v0.2.7: Use .md extension for new Markdown format, .txt for legacy
+                    const useNewMarkdownFormat = config.get<boolean>('useMarkdownFormat', true);
+                    const extension = useNewMarkdownFormat ? '.md' : '.txt';
+                    const fileName = `${folderName} - ${timestamp}${extension}`;
                     const filePath = path.join(bundlesDir, fileName);
 
-                    await fs.writeFile(filePath, finalContent, 'utf8');
+                    await fs.writeFile(filePath, bundleContent, 'utf8');
                     vscode.window.showInformationMessage(`${t('autoSaved')}: ${filePath}`);
                 } catch (err) {
                     vscode.window.showWarningMessage(`Auto-save failed: ${String(err)}`);

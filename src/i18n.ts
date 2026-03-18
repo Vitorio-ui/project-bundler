@@ -37,7 +37,24 @@ const translations: Translations = {
         menuFull: 'Bundle Entire Project',
         menuFullDesc: 'All non-ignored files + Full tree',
         menuArchPreset: 'Architecture Preset',
-        commandSmartMenu: 'Context Builder...'
+        commandSmartMenu: 'PromptPack...',
+        
+        // Markdown Bundle (v0.2.7)
+        mdBundleTitle: 'Project Bundle',
+        mdRoot: 'Root',
+        mdPreset: 'Preset',
+        mdFilesIncluded: 'Files Included',
+        mdEstimatedTokens: 'Estimated Tokens',
+        mdTopHeavyFiles: 'Top Heavy Files',
+        mdProjectStructure: 'Project Structure',
+        mdFileContents: 'File Contents',
+        mdDependencyGraph: 'Dependency Graph',
+        mdContextModules: 'Context Modules',
+        mdMetadata: 'Metadata',
+        mdTokens: 'Tokens',
+        mdExcluded: 'excluded',
+        mdBinary: 'binary',
+        mdTruncated: 'truncated for brevity'
     },
     'ru': {
         generated: 'Сгенерировано',
@@ -71,7 +88,24 @@ const translations: Translations = {
         menuFull: 'Собрать весь проект',
         menuFullDesc: 'Все файлы + Полное дерево',
         menuArchPreset: 'Пресет: Архитектура',
-        commandSmartMenu: 'Конструктор контекста...'
+        commandSmartMenu: 'AI Конструктор контекста...',
+        
+        // Markdown Bundle (v0.2.7)
+        mdBundleTitle: 'Бандл проекта',
+        mdRoot: 'Корень',
+        mdPreset: 'Пресет',
+        mdFilesIncluded: 'Файлы включены',
+        mdEstimatedTokens: 'Токенов',
+        mdTopHeavyFiles: 'Тяжёлые файлы',
+        mdProjectStructure: 'Структура проекта',
+        mdFileContents: 'Содержимое файлов',
+        mdDependencyGraph: 'Граф зависимостей',
+        mdContextModules: 'Контекстные модули',
+        mdMetadata: 'Метаданные',
+        mdTokens: 'Токены',
+        mdExcluded: 'исключен',
+        mdBinary: 'бинарный',
+        mdTruncated: 'сокращено для краткости'
     },
     'es': {
         generated: 'Generado',
@@ -105,7 +139,24 @@ const translations: Translations = {
         menuFull: 'Proyecto Completo',
         menuFullDesc: 'Todos los archivos + Árbol completo',
         menuArchPreset: 'Preset: Arquitectura',
-        commandSmartMenu: 'Constructor de Contexto...'
+        commandSmartMenu: 'AI Constructor de Contexto...',
+        
+        // Markdown Bundle (v0.2.7)
+        mdBundleTitle: 'Bundle de Proyecto',
+        mdRoot: 'Raíz',
+        mdPreset: 'Preset',
+        mdFilesIncluded: 'Archivos Incluidos',
+        mdEstimatedTokens: 'Tokens Estimados',
+        mdTopHeavyFiles: 'Archivos Pesados',
+        mdProjectStructure: 'Estructura del Proyecto',
+        mdFileContents: 'Contenido de Archivos',
+        mdDependencyGraph: 'Gráfico de Dependencias',
+        mdContextModules: 'Módulos de Contexto',
+        mdMetadata: 'Metadatos',
+        mdTokens: 'Tokens',
+        mdExcluded: 'excluido',
+        mdBinary: 'binario',
+        mdTruncated: 'truncado por brevedad'
     },
     'de': {
         generated: 'Erstellt',
@@ -139,7 +190,24 @@ const translations: Translations = {
         menuFull: 'Gesamtes Projekt',
         menuFullDesc: 'Alle Dateien + Vollständiger Baum',
         menuArchPreset: 'Preset: Architektur',
-        commandSmartMenu: 'Kontext-Builder...'
+        commandSmartMenu: 'AI Kontext-Builder...',
+        
+        // Markdown Bundle (v0.2.7)
+        mdBundleTitle: 'Projekt-Bundle',
+        mdRoot: 'Stamm',
+        mdPreset: 'Preset',
+        mdFilesIncluded: 'Dateien Enthalten',
+        mdEstimatedTokens: 'Geschätzte Token',
+        mdTopHeavyFiles: 'Größte Dateien',
+        mdProjectStructure: 'Projektstruktur',
+        mdFileContents: 'Dateiinhalte',
+        mdDependencyGraph: 'Abhängigkeitsdiagramm',
+        mdContextModules: 'Kontextmodule',
+        mdMetadata: 'Metadaten',
+        mdTokens: 'Token',
+        mdExcluded: 'ausgeschlossen',
+        mdBinary: 'binär',
+        mdTruncated: 'gekürzt der Übersichtlichkeit halber'
     },
     'fr': {
         generated: 'Généré',
@@ -173,7 +241,24 @@ const translations: Translations = {
         menuFull: 'Projet complet',
         menuFullDesc: 'Tous les fichiers + Arborescence complète',
         menuArchPreset: 'Preset : Architecture',
-        commandSmartMenu: 'Constructeur de Contexte...'
+        commandSmartMenu: 'AI Constructeur de Contexte...',
+        
+        // Markdown Bundle (v0.2.7)
+        mdBundleTitle: 'Bundle de Projet',
+        mdRoot: 'Racine',
+        mdPreset: 'Preset',
+        mdFilesIncluded: 'Fichiers Inclus',
+        mdEstimatedTokens: 'Tokens Estimés',
+        mdTopHeavyFiles: 'Fichiers Lourds',
+        mdProjectStructure: 'Structure du Projet',
+        mdFileContents: 'Contenu des Fichiers',
+        mdDependencyGraph: 'Diagramme de Dépendances',
+        mdContextModules: 'Modules de Contexte',
+        mdMetadata: 'Métadonnées',
+        mdTokens: 'Tokens',
+        mdExcluded: 'exclu',
+        mdBinary: 'binaire',
+        mdTruncated: 'tronqué par souci de brièveté'
     },
     'ja': {
         generated: '生成日時',
@@ -207,7 +292,7 @@ const translations: Translations = {
         menuFull: 'プロジェクト全体',
         menuFullDesc: '全ファイル + 完全なツリー',
         menuArchPreset: 'プリセット: アーキテクチャ',
-        commandSmartMenu: 'コンテキストビルダー...'
+        commandSmartMenu: 'AI コンテキストビルダー...'
     },
     'zh-cn': {
         generated: '生成时间',
@@ -241,7 +326,24 @@ const translations: Translations = {
         menuFull: '完整项目',
         menuFullDesc: '所有文件 + 完整树结构',
         menuArchPreset: '预设：架构',
-        commandSmartMenu: '上下文构建器...'
+        commandSmartMenu: 'AI 上下文构建器...',
+        
+        // Markdown Bundle (v0.2.7)
+        mdBundleTitle: '项目捆绑包',
+        mdRoot: '根目录',
+        mdPreset: '预设',
+        mdFilesIncluded: '包含的文件',
+        mdEstimatedTokens: '估计 Token 数',
+        mdTopHeavyFiles: '大文件',
+        mdProjectStructure: '项目结构',
+        mdFileContents: '文件内容',
+        mdDependencyGraph: '依赖关系图',
+        mdContextModules: '上下文模块',
+        mdMetadata: '元数据',
+        mdTokens: 'Tokens',
+        mdExcluded: '已排除',
+        mdBinary: '二进制',
+        mdTruncated: '为简洁起见截断'
     }
 };
 

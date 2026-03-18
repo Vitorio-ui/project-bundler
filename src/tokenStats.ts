@@ -136,4 +136,30 @@ export class TokenStats {
         if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
         return count.toString();
     }
+
+    /**
+     * Analyze files and identify the largest ones by token count
+     */
+    public static findLargestFiles(files: Array<{ path: string; content: string; extension: string }>, topN: number = 5): Array<{ path: string; tokens: number; sizeKB: number }> {
+        const fileStats = files.map(f => ({
+            path: f.path,
+            tokens: this.estimateForFile(f.content, f.extension),
+            sizeKB: Math.round(f.content.length / 1024 * 10) / 10
+        }));
+
+        return fileStats
+            .sort((a, b) => b.tokens - a.tokens)
+            .slice(0, topN);
+    }
+
+    /**
+     * Format large files list for display
+     */
+    public static formatLargeFiles(largeFiles: Array<{ path: string; tokens: number; sizeKB: number }>): string {
+        if (largeFiles.length === 0) return '';
+        
+        return largeFiles
+            .map(f => `  • ${f.path} (~${this.format(f.tokens)} tokens, ${f.sizeKB} KB)`)
+            .join('\n');
+    }
 }

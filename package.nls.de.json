@@ -1,5 +1,5 @@
 {
-    "submenu.label": "Project Bundler",
+    "submenu.label": "PromptPack",
     "command.smartMenu": "Kontext für KI vorbereiten...",
     "command.bundleSelectedSmart": "Auswahl bündeln (Smart)",
     "command.bundleFull": "Gesamtes Projekt",
@@ -15,7 +15,7 @@
     "config.excludeFolders": "Ordnernamensmuster, die vom Bundling ausgeschlossen werden sollen. Unterstützt Glob-Suffixe/Präfixe (z.B. *_venv, .cache). Übereinstimmende Ordner werden nie gescannt.",
     "config.userExcludes": "Zusätzliche Glob-Muster zum Ausschluss. Wird zusätzlich zu Ordner- und Binärausschlüssen angewendet. .gitignore-Dateien werden automatisch zusammengeführt.",
     "config.includeDocsFromGitignore": "Ordner `docs/` im Bundle einschließen, auch wenn er in `.gitignore` aufgeführt ist. Nützlich für AI-Dokumentations-Bundles.",
-    "config.useBundlerignore": "`.bundlerignore`-Dateiunterstützung aktivieren. Diese Datei funktioniert wie `.gitignore`, aber nur für Project Bundler.",
+    "config.useBundlerignore": "`.bundlerignore`-Dateiunterstützung aktivieren. Diese Datei funktioniert wie `.gitignore`, aber nur für PromptPack.",
     "config.transformJsonFiles": "JSON-Dateien in ein AI-freundliches YAML-ähnliches Format transformieren. Spart 60-90% Token bei package-lock.json, tsconfig.json usw.",
     "config.extractDatabaseSchema": "Datenbankschema aus SQLite-Dateien und SQL-Migrationen extrahieren. Gibt SQL + Mermaid ER-Diagramm für AI-Kontext aus.",
     "config.tokenWarningThresholds": "Warnung anzeigen, wenn Bundle diese Token-Schwellenwerte überschreitet. Auf leeres Array [] setzen, um Warnungen zu deaktivieren.",

@@ -1,8 +1,8 @@
 {
   "name": "project-bundler",
-  "displayName": "Project Bundler (Context Builder for AI)",
-  "description": "One-click project context builder. Pack project files into a single token-optimized bundle for LLMs.",
-  "version": "0.2.6",
+  "displayName": "PromptPack",
+  "description": "Send your project to favourite LLM in one click. Build clean AI context from real code.",
+  "version": "0.2.7",
   "publisher": "vitorioui",
   "icon": "icon.png",
   "keywords": [
@@ -39,7 +39,7 @@
   "activationEvents": [],
   "contributes": {
     "configuration": {
-      "title": "Context Builder",
+      "title": "PromptPack",
       "properties": {
         "projectBundler.includeFullTree": {
           "type": "boolean",
@@ -154,7 +154,7 @@
         "projectBundler.useBundlerignore": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Enable `.bundlerignore` file support. This file works like `.gitignore` but only for Project Bundler."
+          "markdownDescription": "Enable `.bundlerignore` file support. This file works like `.gitignore` but only for PromptPack."
         },
         "projectBundler.transformJsonFiles": {
           "type": "boolean",
@@ -176,6 +176,11 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Don't open bundle in editor tab. Bundle is still copied to clipboard. Enable for clipboard-only workflow."
+        },
+        "projectBundler.useMarkdownFormat": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Use new unified Markdown format for all presets (v0.2.7). Includes emoji markers, Top Heavy Files table, syntax-highlighted code blocks, and context modules."
         },
         "projectBundler.useDependencyOrdering": {
           "type": "boolean",
@@ -288,6 +293,11 @@
           "type": "boolean",
           "default": false,
           "description": "Use 12-hour time format with AM/PM. If false, uses 24-hour format."
+        },
+        "projectBundler.debugMaxAgeDays": {
+          "type": "number",
+          "default": 7,
+          "markdownDescription": "Maximum age (in days) for files to be considered 'recently modified' in Debug preset. Files modified within this period get higher priority."
         }
       }
     },

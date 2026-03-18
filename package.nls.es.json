@@ -1,5 +1,5 @@
 {
-    "submenu.label": "Project Bundler",
+    "submenu.label": "PromptPack",
     "command.smartMenu": "Preparar contexto para IA...",
     "command.bundleSelectedSmart": "Empaquetar Selección (Smart)",
     "command.bundleFull": "Proyecto Completo",
@@ -15,7 +15,7 @@
     "config.excludeFolders": "Patrones de nombres de carpetas para excluir del bundling. Soporta sufijos/prefijos glob (ej. *_venv, .cache). Las carpetas coincidentes nunca se escanean.",
     "config.userExcludes": "Patrones glob adicionales para excluir. Se aplican además de las exclusiones de carpetas y binarios. Los archivos .gitignore se fusionan automáticamente.",
     "config.includeDocsFromGitignore": "Incluir la carpeta `docs/` en el bundle incluso si está en `.gitignore`. Útil para bundles de documentación de IA.",
-    "config.useBundlerignore": "Activar soporte de archivo `.bundlerignore`. Este archivo funciona como `.gitignore` pero solo para Project Bundler.",
+    "config.useBundlerignore": "Activar soporte de archivo `.bundlerignore`. Este archivo funciona como `.gitignore` pero solo para PromptPack.",
     "config.transformJsonFiles": "Transformar archivos JSON a un formato similar a YAML amigable para IA. Ahorra 60-90% de tokens en package-lock.json, tsconfig.json, etc.",
     "config.extractDatabaseSchema": "Extraer esquema de base de datos de archivos SQLite y migraciones SQL. Genera SQL + diagrama ER Mermaid para contexto de IA.",
     "config.tokenWarningThresholds": "Mostrar advertencia cuando el bundle exceda estos umbrales de tokens. Establecer como array vacío [] para desactivar.",

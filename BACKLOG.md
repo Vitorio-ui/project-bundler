@@ -1,7 +1,32 @@
-# Backlog — Project Bundler
+# Backlog — PromptPack
 
 > Items are grouped by tier and priority. Use GitHub Issues for assignment and status tracking.
 > Legend: 🟢 Free | 🟡 Early Access | 🔵 Pro | 🔴 Tech Debt
+
+---
+
+## 🎁 Early Access (Until v1.0)
+
+**All features are currently free until v1.0.**
+
+Early users will keep access to Pro features as a thank you for feedback and support.
+
+### Transition to v1.0
+
+We'll launch v1.0 when:
+- ✅ Clear use-case established
+- ✅ Stable UX
+- ✅ 20–50 real users (used ≥3 times)
+- ✅ Understanding of what users will pay for
+
+### Planned Tier Split (v1.0)
+
+| Tier | What's Included | Philosophy |
+|---|---|---|
+| **🟢 Free** | Bundle, Basic Presets, Token Stats | "Solves the task" |
+| **💎 Pro** | Auto file selection, Dependency Graph, DB→MD, API/Infra Context, Smart Ordering | "Makes it better" |
+
+> **Key Principle:** Free gives results. Pro makes them better.
 
 ---
 
@@ -52,7 +77,13 @@
 | **Feature:** Token count per file/folder in tree (F-04) | v0.2.6 |
 | **Documentation:** Language-specific exclusions guide (EXCLUSIONS_BY_LANGUAGE.md) | v0.2.6 |
 | **Feature:** EA-04 Complete — Dependency graph, improved import resolution, [entry] markers | v0.2.6 |
+| **Feature:** Top Heavy Files Analysis — Token transparency in bundle header | v0.2.7 |
+| **Feature:** Unified Markdown Format — LLM-optimized output with emoji markers, tables, syntax highlighting | v0.2.7 |
 | **Tech Debt:** Unit tests for jsonTransformer.ts, dbExtractor.ts, dependencyGraph.ts, folderSelector.ts (TD-07, TD-08, TD-09, TD-10) | v0.2.6 |
+| **Bug Fix:** Preset scoring "smearing" - sharp weights implementation (TD-12) | v0.2.7 |
+| **Bug Fix:** Minimal preset including too many files - hard constraints (TD-13) | v0.2.7 |
+| **Bug Fix:** Architecture preset token bloat - file size limit (TD-14) | v0.2.7 |
+| **Bug Fix:** Debug preset lacking prioritization - recent files first (TD-15) | v0.2.7 |
 
 ---
 
@@ -72,6 +103,7 @@ These block confidence in future changes.
 | TD-08 | Unit tests for `dbExtractor.ts` | 15+ tests covering: SQLite detection, migration file detection, Prisma schema parsing, result structures | ✅ Done v0.2.6 |
 | TD-09 | Unit tests for `dependencyGraph.ts` | 35+ tests covering: graph construction, depth calculation, import parsing for 10+ languages, entry point detection | ✅ Done v0.2.6 |
 | TD-10 | Unit tests for `folderSelector.ts` | 25+ tests covering: exclusion logic, selection management, path handling, parent-child selection | ✅ Done v0.2.6 |
+| TD-11 | Token estimation calibration for Gemini/Claude tokenizers | Current char-based estimation undercounts by ~45%. Need calibration factor or LLM-specific tokenizers. Target: v0.3.0 | 📋 Backlog |
 
 ---
 

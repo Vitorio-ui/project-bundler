@@ -80,7 +80,7 @@ export class LicenseManager {
         const dailyCount = this.getDailyCount();
         if (dailyCount > this.WARN_DAILY_USAGE && dailyCount % 10 === 0) {
             vscode.window.showWarningMessage(
-                `You've generated ${dailyCount} bundles today. Thanks for using Project Bundler!`
+                `You've generated ${dailyCount} bundles today. Thanks for using PromptPack!`
             );
         }
 
@@ -151,6 +151,6 @@ export class LicenseManager {
         await this.context.globalState.update(this.KEY_EARLY_ACCESS, undefined);
         await this.context.globalState.update('projectBundler.dailyCount', 0);
         await this.context.globalState.update('projectBundler.lastUsageDate', undefined);
-        vscode.window.showInformationMessage("Project Bundler state reset.");
+        vscode.window.showInformationMessage("PromptPack state reset.");
     }
 }

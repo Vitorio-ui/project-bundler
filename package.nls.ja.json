@@ -1,5 +1,5 @@
 {
-    "submenu.label": "Project Bundler",
+    "submenu.label": "PromptPack",
     "command.smartMenu": "AI 用コンテキストを準備...",
     "command.bundleSelectedSmart": "選択範囲をバンドル",
     "command.bundleFull": "プロジェクト全体",
@@ -15,7 +15,7 @@
     "config.excludeFolders": "バンドルから除外するフォルダ名パターン。Glob サフィックス/プレフィックスをサポート（例：*_venv、.cache）。一致するフォルダはスキャンされません。",
     "config.userExcludes": "除外する追加のグロブパターン。フォルダとバイナリの除外に追加で適用されます。.gitignore ファイルは自動的にマージされます。",
     "config.includeDocsFromGitignore": "`.gitignore` にリストされていても `docs/` フォルダをバンドルに含めます。AI ドキュメントバンドルに役立ちます。",
-    "config.useBundlerignore": "`.bundlerignore` ファイルのサポートを有効化。このファイルは Project Bundler 専用の `.gitignore` として機能します。",
+    "config.useBundlerignore": "`.bundlerignore` ファイルのサポートを有効化。このファイルは PromptPack 専用の `.gitignore` として機能します。",
     "config.transformJsonFiles": "JSON ファイルを AI フレンドリーな YAML 形式に変換。package-lock.json、tsconfig.json などで 60-90% のトークンを節約。",
     "config.extractDatabaseSchema": "SQLite ファイルと SQL マイグレーションからデータベーススキーマを抽出。AI コンテキスト用に SQL + Mermaid ER 図を出力。",
     "config.tokenWarningThresholds": "バンドルがこれらのトークンしきい値を超えたときに警告を表示。無効にするには空の配列 [] に設定。",

@@ -1,35 +1,57 @@
-# 📦 Project Bundler — Context Builder for AI
+# 📦 PromptPack — AI Context Builder & Bundler
 
 <div align="center">
-  <img src="icon.png" width="128" height="128" alt="Context Builder Logo">
-
-  <p><strong>One-click project context for Gemini, ChatGPT, Claude, DeepSeek amd LLMs.</strong></p>
-
+  <img src="icon.png" width="128" height="128" alt="PromptPack Logo">
+  <p><strong>Convert your codebase to prompt. One-click workspace context for ChatGPT, Claude, DeepSeek, Gemini and local LLMs.</strong></p>
 </div>
 
 ---
+**PromptPack** (formerly AI Context Builder) helps you export your project structure and selected source code into a single, clean, **AI-optimized markdown prompt** — ready to paste into any LLM context window.
 
-Project Bundler helps you package your project structure and selected source code
-into a single, clean, AI-friendly text bundle — ready to paste into any LLM.
-
-**Stop copying files manually. Start building better context.**
+**Stop copying files manually. Start building better context for AI.**
 
 > No servers. No telemetry. Fully local.
 
 ---
 
-## 🚀 Why Project Bundler?
+## 🎁 Early Access (Until v1.0)
 
-Working with AI on real projects is painful:
+**All features are currently free until v1.0.**
 
-- You copy one file…
-- then another…
-- then explain the folder structure manually…
+Early users will keep access to Pro features as a thank you for feedback and support.
 
-**Project Bundler solves this in one click.**
+### Planned Tier Split (v1.0)
+
+| Tier | What's Included |
+|---|---|
+| **🟢 Free** | Bundle, Basic Presets, Token Stats — "solves the task" |
+| **💎 Pro** | Auto file selection, Dependency Graph, DB→MD, API/Infra Context, Smart Ordering — "makes it better" |
+
+> **Philosophy:** Free gives results. Pro makes them better.
+
+---
+
+## 🚀 Why PromptPack? (The Repo-to-Prompt Problem)
+
+Working with AI on real production code is painful:
+- You waste time manually copying and pasting files to chat.
+- You miss crucial structural context (dependencies, configs).
+- You easily blow past the **LLM token limits** with unnecessary files.
+- Providing a full **repo to prompt** manually is impossible.
+
+## ✅ Solution: Code to Prompt in One Click
+
+Right-click → **Bundle Selection** → Paste into AI.
+**PromptPack** solves codebase exporting instantly.
+
+It automatically generates:
+- A clean, readable **project tree** of your workspace.
+- The full contents of selected files in a structured format.
+
+**PromptPack solves this in one click.**
 
 It generates:
-- a readable ASCII tree of your project
+- a readable tree of your project
 - full contents of selected files
 - file modification dates (optional)
 - a clear separation between structure and code
@@ -46,7 +68,7 @@ Perfect for:
 ## 🚀 Features
 
 ### 🧠 Smart Tree (Early Access)
-Instead of dumping a 500-file tree structure, Project Bundler intelligently collapses folders irrelevant to your selection.
+Instead of dumping a 500-file tree structure, PromptPack intelligently collapses folders irrelevant to your selection.
 *   **Focus:** Shows context only around selected files.
 *   **Compression:** Collapses unrelated folders (e.g., `tests/ ... [collapsed: 42 files]`).
 *   **Token Savings:** Reduces visual noise and token count significantly.
@@ -54,11 +76,11 @@ Instead of dumping a 500-file tree structure, Project Bundler intelligently coll
     Works correctly even when opened at `/` or a high-level system path.
 *   **Context Siblings:** Shows ±2 files around each selected item so you always see what's nearby, not just the selected file in isolation.
 
-### 📊 Token Stats (Free)
-Every bundle includes:
-*   Estimated token count (tree + content)
-*   Total size in KB
-*   Helps avoid LLM context overflow
+### 📊 Token Counter & Stats (Free)
+Never guess your prompt size again. Every output includes:
+* Accurate **token calculator** estimates (tree + file contents).
+* Total payload size in KB.
+* Helps bypass **context window overflow** for OpenAI, Anthropic, Gemini and local models (like Ollama).
 
 ### 🌍 Polyglot Support
 Works out-of-the-box with pre-configured ignore rules for:
@@ -84,6 +106,75 @@ Extracts database schema from SQLite files and SQL migrations:
 *   Outputs SQL schema + visual Mermaid diagram for AI context
 *   Disabled via `projectBundler.extractDatabaseSchema` setting
 
+### 🎯 **Context Presets** (v0.2.7 - Early Access)
+Pre-configured filters for common AI workflows:
+*   **🟢 Minimal Preset** — "How to run the project?"
+    *   Entry points + config files + root documentation
+    *   Maximum 10 files (~8-10k tokens)
+    *   Use case: Quick onboarding, "make it work" questions
+*   **🔵 Architecture Preset** — "How is the project structured?"
+    *   Interfaces, types, configs, shallow source files (depth ≤3)
+    *   Excludes files >15KB to prevent token bloat
+    *   Maximum 40 files (~40-50k tokens)
+    *   Use case: Architecture discussions, refactoring planning
+*   **🔴 Debug Preset** — "Where might the problem be?"
+    *   Prioritized: recently modified → error-prone paths → entry points
+    *   Maximum 25 files (~50-60k tokens)
+    *   Use case: Debugging with AI, bug investigation
+*   **⚪ Selected** — Your manual selection with transparency
+    *   Shows "Top heavy files" in header for token clarity
+    *   Example: `src/jsonTransformer.ts (~24k tokens, 17.4 KB)`
+*   **⚪ Full** — Complete project (default)
+
+Presets use intelligent scoring with sharp weights:
+*   Entry points: +1000, Config files: +500, Interfaces: +200
+*   Heavy penalties: Tests -500, Binaries -1000, Large files -100 per 10KB over 20KB
+*   Hard constraints prevent "preset drift" (all presets feeling the same)
+
+### 📝 **Unified Markdown Format** (v0.2.7)
+All presets now use a consistent, LLM-optimized Markdown format:
+*   **Emoji Markers** — Quick preset identification (🟢 Minimal, 🟡 Architecture, 🔴 Debug, 🔵 Full, ✨ Selected)
+*   **Top Heavy Files Table** — Token transparency showing largest files by token count
+*   **Structured Project Tree** — Hierarchical view with token counts per file
+*   **Syntax-Highlighted Code Blocks** — Language-specific formatting for 20+ languages
+*   **Visual Markers** — `⚠️ [excluded]` for excluded files, `📦 [binary]` for binary files
+*   **Context Modules** — Extensible sections for Database Schema, Infra, API (future-ready)
+*   **Mermaid Diagrams** — Architecture preset includes dependency graph visualization
+
+**Example Output:**
+```markdown
+# 🟢 Project Bundle — Minimal Preset
+
+**Root:** /path/to/project  
+**Preset:** Minimal  
+**Files Included:** 10  
+**Estimated Tokens:** ~10k  
+
+## Top Heavy Files
+| File | Tokens | Size |
+|------|--------|------|
+| package.json | ~200 | 5 KB |
+| index.ts | ~1.2k | 12 KB |
+
+## Project Structure
+- **src/**
+  - **index.ts** (~1.2k tokens)
+- **package.json** (~200 tokens)
+
+## File Contents
+```typescript
+// index.ts
+import { run } from './app';
+run();
+```
+```
+
+*Disabled via `projectBundler.useMarkdownFormat` setting (Default: `true`)*
+
+**File Extension:**
+- Auto-saved bundles use `.md` extension for new Markdown format (better editor support)
+- Legacy format continues to use `.txt` extension
+
 ### 📁 **Interactive Folder Selection** (v0.2.6)
 Select which folders to include in the bundle:
 *   Right-click → "Select Folders to Include... (EA)"
@@ -102,10 +193,10 @@ No network requests. No data collection. Works fully offline.
 
 ## 🧭 How to use
 
-1.  **Right-click** on any folder or file in VS Code Explorer.
-2.  Look for **"Prepare Context for AI..."** (it's at the top of the menu).
-3.  Choose **"Bundle Selection (Smart)"** or another preset.
-4.  Paste into your favorite LLM.
+1. **Right-click** on any folder or file in the VS Code Explorer.
+2. Select **"Prepare Context for AI..."** (conveniently at the top of the context menu).
+3. Choose **"Bundle Selection (Smart)"** or select a specific context preset.
+4. Paste the generated markdown directly into **ChatGPT, Claude web UI, DeepSeek / Gemini Chat or GitHub Copilot**.
 
 ---
 
@@ -125,6 +216,8 @@ No network requests. No data collection. Works fully offline.
 *   `projectBundler.useDependencyOrdering`: Sort files by dependency order (entry points first, then dependencies). EA-04 feature (Default: `true`).
 *   `projectBundler.tokenWarningThresholds`: Show warning when bundle exceeds these token thresholds. Default: `[32000, 64000, 128000]`. Set to empty array `[]` to disable warnings.
 *   `projectBundler.suppressEditorTab`: Don't open bundle in editor tab. Bundle is still copied to clipboard. Enable for clipboard-only workflow (Default: `false`).
+*   `projectBundler.debugMaxAgeDays`: Maximum age (in days) for files to be considered 'recently modified' in Debug preset. Files modified within this period get higher priority (Default: `7`).
+*   `projectBundler.useMarkdownFormat`: Use new unified Markdown format for all presets (v0.2.7). Includes emoji markers, Top Heavy Files table, syntax-highlighted code blocks, and context modules (Default: `true`).
 
 ### Exclusion Settings (v0.2.5)
 
@@ -138,7 +231,7 @@ No network requests. No data collection. Works fully offline.
 *   `projectBundler.transformJsonFiles`: Transform JSON files to AI-friendly YAML-like format. Saves 60-90% tokens on `package-lock.json`, `tsconfig.json`, etc. (Default: `true`).
 *   `projectBundler.extractDatabaseSchema`: Extract database schema from SQLite files and SQL migrations. Outputs SQL + Mermaid ER diagram for AI context. (Default: `true`).
 *   `projectBundler.includeDocsFromGitignore`: Include `docs/` folder in bundle even if it is listed in `.gitignore`. Useful for AI documentation bundles. (Default: `false`).
-*   `projectBundler.useBundlerignore`: Enable `.bundlerignore` file support. This file works like `.gitignore` but only for Project Bundler. (Default: `true`).
+*   `projectBundler.useBundlerignore`: Enable `.bundlerignore` file support. This file works like `.gitignore` but only for PromptPack. (Default: `true`).
 
 ---
 
@@ -146,7 +239,15 @@ No network requests. No data collection. Works fully offline.
 
 We believe in a usable Free tier, not a crippled demo.
 
-| Feature | Free (Early Access) | Pro (v1.0 Goal) |
+### 🎁 Early Access (Until v1.0)
+
+**All features are currently free until v1.0.**
+
+Early users will keep access to Pro features as a thank you for feedback and support.
+
+### Planned Tier Split (v1.0)
+
+| Feature | Free | Pro (v1.0) |
 | :--- | :---: | :---: |
 | **Context Builder** (Manual selection) | ✅ | ✅ |
 | **Code Context** | ✅ | ✅ |
@@ -158,18 +259,17 @@ We believe in a usable Free tier, not a crippled demo.
 | **`.bundlerignore` Support** | ✅ | ✅ |
 | **JSON Transformer** (AI-friendly format) | ✅ | ✅ |
 | **Database Schema Extractor** | ✅ | ✅ |
-| **Smart Tree Compression** | ✅ (Opt-in) | ✅ |
-| **Custom Excludes** (manual ignore rules) | ✅ | ✅ |
-| **Context Presets** (Minimal, Arch, Debug) | ✅ (EA) | ✅ |
-| **Interactive Folder Selection** (EA-07) | ✅ (EA) | ✅ |
-| **File Ordering Engine** (EA-04) | ✅ (EA) | ✅ |
+| **Smart Tree Compression** | ✅ | ✅ |
+| **Context Presets** (Minimal, Arch, Debug) | ✅ | ✅ |
+| **Interactive Folder Selection** | ✅ | ✅ |
+| **File Ordering Engine** | ✅ | ✅ |
 | **Token Warning Thresholds** | ✅ | ✅ |
 | **Suppress Editor Tab** | ✅ | ✅ |
 | **API Context** | ❌ | ✅ |
 | **Infra Context** | ❌ | ✅ |
 | **Priority Support** | ❌ | ✅ |
 
-> **Note on Early Access:** Features marked (EA) are currently free to gather feedback. In version 1.0, some may become part of the Pro plan. This includes Smart Tree Compression, Context Presets, Interactive Folder Selection, and File Ordering Engine.
+> **Philosophy:** Free gives results. Pro makes them better.
 
 ---
 
@@ -216,7 +316,7 @@ HTML report available at `coverage/index.html` after running tests.
 
 ## 🧩 Philosophy
 
-Project Bundler is intentionally simple.
+PromptPack is intentionally simple.
 
 It does one thing well:
 

@@ -1,5 +1,105 @@
 # Changelog
 
+## 🎁 Early Access (Until v1.0)
+
+**All features are currently free until v1.0.**
+
+Early users will keep access to Pro features as a thank you for feedback and support.
+
+### Early Access Features
+
+- ✅ Smart Tree Compression
+- ✅ Context Presets (Minimal, Architecture, Debug)
+- ✅ Interactive Folder Selection
+- ✅ Context-aware File Ordering
+- ✅ JSON Transformer
+- ✅ Database Schema Extractor
+
+> **Note:** After v1.0, some Early Access features may move to the Pro tier. Early users retain access.
+
+---
+
+## [0.2.7] - 2026-03-18
+
+### Added
+- **New 3-Layer Preset Architecture:** Complete refactor from monolithic to modular design:
+  - **Layer 1: FileAnalyzer** (`presetAnalyzer.ts`) - Collects semantic metadata from files
+    - `FileMeta` type with semantic flags, structural info, and dynamics (including `sizeBytes`)
+    - Heuristics for entry points, configs, tests, interfaces, root docs
+  - **Layer 2: FileScorer** (`presetScorer.ts`) - Calculates importance scores with sharp weights
+    - Semantic scoring (entry +1000, config +500, interface +200)
+    - Structural scoring (depth-based, core folders)
+    - Dynamic scoring (recency bias: today +300, this week +100)
+    - Heavy penalties (tests -500, binaries -1000, large files -100 per 10KB over 20KB)
+  - **Layer 3: PresetSelector** (`presetSelector.ts`) - Applies preset-specific filtering with hard constraints
+    - Minimal: Entry + config + root docs, max 10 files
+    - Architecture: Depth ≤3 + semantic flags, excludes files >15KB, max 40 files
+    - Debug: Prioritized filtering (recent > error-prone > entry), max 25 files
+  - **PresetEngine** - Now an orchestrator that coordinates the 3 layers
+
+### Changed
+- **🟢 Minimal Preset ("How to run the project?"):**
+  - Before: Top 20 scoring files (often 50% of project)
+  - After: Hard constraints - only entry points, configs, root documentation
+  - Limit: Maximum 10 files (was 20)
+  - Benefits: Truly minimal (~5-15 files), focused on "how to run"
+
+- **🔵 Architecture Preset ("How is the project structured?"):**
+  - Before: Depth ≤3 + semantic flags, no size limit
+  - After: Added hard file size limit (>15KB excluded)
+  - Depth constraint tightened: ≤3 for root files, ≤5 for core folders only
+  - Limit: Maximum 40 files
+  - Benefits: Prevents token bloat from large files
+
+- **🔴 Debug Preset ("Where might the problem be?"):**
+  - Before: Flat filter (entry OR error-prone OR recent)
+  - After: Prioritized filtering - recent files first, then error-prone, then entry points
+  - Limit: Maximum 25 files
+  - Benefits: Focuses on most likely bug sources
+
+- **Token Stats - Top Heavy Files:**
+  - New section in bundle header showing largest files by token count
+  - Displays: path, token estimate, size in KB
+  - Example:
+    ```
+    Top heavy files:
+      • src/jsonTransformer.ts (~24k tokens, 17.4 KB)
+      • src/bundler.ts (~15k tokens, 12.1 KB)
+    ```
+  - Benefits: Transparency - users understand why N files = X tokens
+
+- **📝 Unified Markdown Format (v0.2.7):**
+  - Complete overhaul of bundle output format for better LLM and human readability
+  - **Emoji Preset Markers:** 🟢 Minimal, 🟡 Architecture, 🔴 Debug, 🔵 Full, ✨ Selected
+  - **Top Heavy Files Table:** Markdown table showing largest files by tokens
+  - **Structured Project Tree:** Hierarchical view with token counts per file/folder
+  - **Syntax-Highlighted Code Blocks:** Language-specific formatting for 20+ languages (TypeScript, Python, Rust, Go, etc.)
+  - **Visual Markers:** `⚠️ [excluded]` for excluded files, `📦 [binary]` for binary files
+  - **Context Modules Foundation:** Extensible sections for Database Schema, Infra, API context
+  - **Mermaid Diagrams:** Architecture preset includes dependency graph visualization
+  - **LLM-Optimized:** Structured headers create semantic blocks for better AI understanding
+  - **Future-Ready:** Format designed for easy extension with new context modules
+  - **Auto-save with .md extension:** New format saves bundles as `.md` files for better Markdown editor support
+  - Controlled via `projectBundler.useMarkdownFormat` setting (Default: `true`)
+
+### Technical
+- **New Files:**
+  - `src/bundleMarkdown.ts` (~440 lines) - Unified Markdown generator with preset emoji markers, Top Heavy Files table, syntax-highlighted code blocks, context modules foundation
+  - `src/bundler.ts` - Added `generateMarkdownBundle()` function (~180 lines) for new MD format generation
+- **Modified Files:**
+  - `src/extension.ts` - Integrated new MD format generator with fallback to legacy format
+  - `src/i18n.ts` - Added 13 new i18n keys for MD format (mdBundleTitle, mdRoot, mdPreset, etc.) in all 7 languages
+  - `package.json` - Added `projectBundler.useMarkdownFormat` setting
+  - `package.nls*.json` - Added i18n translations for new setting
+- **Localization:**
+  - Full i18n support for MD format in English, Russian, Spanish, German, French, Japanese, Chinese
+- All 132 tests passing
+- Bug fixes:
+  - Fixed preset scoring "smearing" - now uses sharp weights (1000/500/200 vs 100/80/60)
+  - Fixed Minimal preset including too many files (was 20, now max 10)
+  - Fixed Architecture preset token bloat (now excludes files >15KB)
+  - Fixed Debug preset lacking prioritization (recent files now first)
+
 ## [0.2.6] - 2026-03-17
 
 ### Added
@@ -21,7 +121,7 @@
   - Mermaid ER diagram output for visual AI context
   - Relationship detection from foreign keys
 - **`.bundlerignore` Support (F-01):** Project-level ignore file separate from `.gitignore`:
-  - Works like `.gitignore` but only for Project Bundler
+  - Works like `.gitignore` but only for PromptPack
   - Supports all gitignore patterns (prefix, suffix, wildcards, negation)
   - Nested `.bundlerignore` files in subdirectories
   - Enabled by default via `projectBundler.useBundlerignore` setting
@@ -103,13 +203,18 @@
 | SQLite (10 tables) | 0 (binary) | ~500 tokens | +new info |
 | Prisma schema (20 models) | ~2k tokens | ~1k tokens | 50% |
 
-### Bundle Size by Preset
-| Preset | Files | Tokens | Reduction |
-|--------|-------|--------|-----------|
-| **Full** | 100% | ~100k | — |
-| **Architecture** | ~15-25% | ~15-25k | 75-85% |
-| **Minimal** | ~5-10% | ~5-10k | 90-95% |
-| **Debug** | ~10-20% | ~10-20k | 80-90% |
+### Bundle Size by Preset (v0.2.7)
+| Preset | Files | Tokens | Reduction | Intent |
+|--------|-------|--------|-----------|--------|
+| **Full** | 100% | ~100k | — | Complete project |
+| **Architecture** | ~15-25% | ~40-50k | 50-60% | How is it structured? |
+| **Minimal** | ~5-10% | ~8-10k | 90-95% | How to run? |
+| **Debug** | ~15-25% | ~50-60k | 40-50% | Where's the bug? |
+| **Selected** | ~50% | ~70k | 30% | User's choice + transparency |
+
+> **v0.2.7 improvements:** 
+> - Minimal reduced from 20 → 10 files, Architecture now excludes files >15KB, Debug prioritizes recent files, Selected shows "Top heavy files" for transparency
+> - **New Unified Markdown Format:** All presets now output clean, LLM-optimized Markdown with emoji markers, Top Heavy Files tables, syntax-highlighted code blocks, and context modules
 
 ## [0.2.5] - 2026-03-09
 
